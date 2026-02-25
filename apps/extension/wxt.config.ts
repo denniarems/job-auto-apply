@@ -1,12 +1,15 @@
 import { defineConfig } from 'wxt';
-import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 
 // See https://wxt.dev/api/config.html
 export default defineConfig({
   extensionApi: 'chrome',
   modules: ['@wxt-dev/module-react'],
+  manifest: {
+    permissions: ['storage'],
+    host_permissions: ['*://localhost/*'],
+  },
   vite: () => ({
-    plugins: [react(), tailwindcss()],
+    plugins: [tailwindcss()],
   }),
 });

@@ -12,7 +12,7 @@
     "enableAgents": true,
     "plan": true
   },
-  "security":{
+  "security": {
     "enablePermanentToolApproval": true
   },
   "hooks": {

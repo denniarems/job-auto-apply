@@ -19,7 +19,7 @@ export default function App() {
   const { status } = useBackendStatus();
 
   return (
-    <div className="w-[400px] h-[500px] bg-white flex flex-col font-sans text-slate-900">
+    <div className="w-full h-screen bg-white flex flex-col font-sans text-slate-900">
       {/* Header */}
       <header className="px-4 py-3 border-b flex items-center justify-between bg-slate-50">
         <div className="flex items-center gap-2">
