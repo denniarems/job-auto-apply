@@ -1,5 +1,8 @@
 {
     "editor.defaultFormatter": "oxc.oxc-vscode",
     "editor.formatOnSave": true,
-    "editor.formatOnSaveMode": "file"
+    "editor.formatOnSaveMode": "file",
+    "cSpell.words": [
+        "uuidv"
+    ]
 }

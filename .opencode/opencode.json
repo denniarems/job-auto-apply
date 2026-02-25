@@ -1,0 +1,10 @@
+{
+  "permission": {
+    "read": {
+      "D:/code/job-auto-apply/.opencode/get-shit-done/*": "allow"
+    },
+    "external_directory": {
+      "D:/code/job-auto-apply/.opencode/get-shit-done/*": "allow"
+    }
+  }
+}

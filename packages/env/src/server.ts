@@ -8,6 +8,7 @@ export const env = createEnv({
     NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
     ANTHROPIC_API_KEY: z.string().optional(),
     OPENAI_API_KEY: z.string().optional(),
+    GOOGLE_GENERATIVE_AI_API_KEY: z.string().optional(),
     PORT: z.coerce.number().default(3000),
   },
   runtimeEnv: process.env,

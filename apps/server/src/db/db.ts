@@ -1,39 +1,44 @@
-import * as lancedb from "@lancedb/lancedb";
+import * as zvec from "@zvec/zvec";
 import os from "os";
 import path from "path";
 import fs from "fs";
 
-const DB_PATH = path.join(os.homedir(), ".job-auto-apply", "lancedb");
+const DB_DIR = path.join(os.homedir(), ".job-auto-apply");
+const DB_PATH = path.join(DB_DIR, "memory.db");
 
-export let db: lancedb.Connection;
-export let memoriesTable: lancedb.Table;
+export let collection: zvec.ZVecCollection;
 
 export async function initDb() {
-  const dbDir = path.dirname(DB_PATH);
-  if (!fs.existsSync(dbDir)) {
-    fs.mkdirSync(dbDir, { recursive: true });
+  if (!fs.existsSync(DB_DIR)) {
+    fs.mkdirSync(DB_DIR, { recursive: true });
   }
 
-  db = await lancedb.connect(DB_PATH);
-
-  try {
-    memoriesTable = await db.openTable("memories");
-  } catch {
-    // Table doesn't exist, create it with a dummy record to define schema
-    memoriesTable = await db.createTable("memories", [
+  const schema = new zvec.ZVecCollectionSchema({
+    name: "memories",
+    vectors: [
       {
-        id: "seed",
-        question: "Seed question",
-        answer: "Seed answer",
-        category: "seed",
-        source: "system",
-        usage_count: 0,
-        last_used: Date.now(),
-        created_at: Date.now(),
-        vector: Array(1536).fill(0),
-      },
-    ]);
-    // Optionally delete seed record if wanted, but keeping it ensures schema
-    await memoriesTable.delete("id = 'seed'");
-  }
+        name: "embedding",
+        dataType: zvec.ZVecDataType.VECTOR_FP32,
+        dimension: 1536,
+        indexParams: {
+          indexType: zvec.ZVecIndexType.HNSW,
+          metricType: zvec.ZVecMetricType.COSINE,
+          m: 16,
+          efConstruction: 200,
+        }
+      }
+    ],
+    fields: [
+      { name: "question", dataType: zvec.ZVecDataType.STRING },
+      { name: "answer", dataType: zvec.ZVecDataType.STRING },
+      { name: "category", dataType: zvec.ZVecDataType.STRING },
+      { name: "source", dataType: zvec.ZVecDataType.STRING },
+      { name: "usage_count", dataType: zvec.ZVecDataType.INT64 },
+      { name: "last_used", dataType: zvec.ZVecDataType.INT64 },
+      { name: "created_at", dataType: zvec.ZVecDataType.INT64 },
+    ]
+  });
+
+  // ZVecCreateAndOpen will open if exists, or create if not.
+  collection = zvec.ZVecCreateAndOpen(DB_PATH, schema);
 }

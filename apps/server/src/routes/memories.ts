@@ -1,19 +1,21 @@
 import { Hono } from "hono";
 import { generateEmbedding } from "../lib/ai";
-import { memoriesTable } from "../db/db";
+import { collection } from "../db/db";
 import { v4 as uuidv4 } from "uuid";
+import * as zvec from "@zvec/zvec";
 
 const router = new Hono();
 
 router.post("/", async (c) => {
   const { question, answer, category, source } = await c.req.json();
-  
+
   const vector = await generateEmbedding(question);
   const now = Date.now();
-  
-  await memoriesTable.add([
-    {
-      id: uuidv4(),
+
+  const doc: zvec.ZVecDocInput = {
+    id: uuidv4(),
+    vectors: { "embedding": new Float32Array(vector) },
+    fields: {
       question,
       answer,
       category,
@@ -21,54 +23,62 @@ router.post("/", async (c) => {
       usage_count: 0,
       last_used: now,
       created_at: now,
-      vector,
     },
-  ]);
-  
+  };
+
+  collection.insertSync(doc);
+
   return c.json({ success: true }, 201);
 });
 
 router.get("/search", async (c) => {
   const query = c.req.query("q");
   if (!query) return c.json({ error: "Query required" }, 400);
-  
+
   const vector = await generateEmbedding(query);
-  
-  // Search with 85% threshold (0.85 cosine similarity)
-  // LanceDB default distance is L2, but we can use cosine if we normalize or use .distanceType('cosine')
-  const results = await memoriesTable
-    .search(vector)
-    // @ts-expect-error - distanceType is only on VectorQuery but search() returns Query | VectorQuery
-    .distanceType("cosine")
-    .limit(1)
-    .toArray();
-    
-  if (results.length > 0 && results[0]._distance > 0.85) {
+  const queryVector = new Float32Array(vector);
+
+  // Search with 85% threshold (0.85 similarity)
+  const results = collection.querySync({
+    fieldName: "embedding",
+    vector: queryVector,
+    topk: 1
+  });
+
+  if (results.length > 0) {
     const memory = results[0];
-    
-    // Update usage
-    await memoriesTable.update({
-      where: `id = '${memory.id}'`,
-      values: {
-        usage_count: Number(memory.usage_count) + 1,
-        last_used: Date.now()
-      }
-    });
-    
-    return c.json({ found: true, ...memory });
+    if (memory && memory.score > 0.85) {
+      // Update usage
+      const updatedFields = { ...memory.fields };
+      updatedFields.usage_count = (Number(updatedFields.usage_count) || 0) + 1;
+      updatedFields.last_used = Date.now();
+
+      collection.updateSync({
+        id: memory.id,
+        fields: updatedFields
+      });
+
+      return c.json({ found: true, id: memory.id, ...memory.fields });
+    }
   }
-  
+
   return c.json({ found: false });
 });
 
 router.get("/all", async (c) => {
-  const results = await memoriesTable.query().limit(100).toArray();
-  return c.json(results);
+  // Query with a zero vector to get some results if no easy 'all' exists
+  const results = collection.querySync({
+    fieldName: "embedding",
+    vector: new Float32Array(1536).fill(0),
+    topk: 100
+  });
+
+  return c.json(results.map(r => ({ id: r.id, ...r.fields })));
 });
 
 router.delete("/:id", async (c) => {
   const id = c.req.param("id");
-  await memoriesTable.delete(`id = '${id}'`);
+  collection.deleteSync(id);
   return c.json({ success: true });
 });
 

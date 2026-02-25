@@ -14,7 +14,7 @@
     "@ai-sdk/google": "^3.0.31",
     "@ai-sdk/openai": "^3.0.33",
     "@job-auto-apply/env": "workspace:*",
-    "@lancedb/lancedb": "^0.26.2",
+    "@zvec/zvec": "^0.2.0",
     "ai": "^6.0.99",
     "dotenv": "catalog:",
     "hono": "^4.8.2",
