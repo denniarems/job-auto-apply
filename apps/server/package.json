@@ -14,10 +14,11 @@
     "@ai-sdk/google": "^3.0.31",
     "@ai-sdk/openai": "^3.0.33",
     "@job-auto-apply/env": "workspace:*",
-    "@zvec/zvec": "^0.2.0",
+    "@lancedb/lancedb": "^0.26.2",
     "ai": "^6.0.99",
     "dotenv": "catalog:",
     "hono": "^4.8.2",
+    "pdf-parse": "^1.1.1",
     "uuid": "^13.0.0",
     "zod": "catalog:"
   },
