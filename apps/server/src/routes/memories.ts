@@ -82,4 +82,51 @@ router.delete("/:id", async (c) => {
   return c.json({ success: true });
 });
 
+router.patch("/:id", async (c) => {
+  const id = c.req.param("id");
+  const { question, answer, category, source } = await c.req.json();
+
+  // Get existing memory
+  const results = collection.querySync({
+    fieldName: "embedding",
+    vector: new Float32Array(1536).fill(0),
+    topk: 100
+  });
+
+  const existing = results.find(r => r.id === id);
+  if (!existing) {
+    return c.json({ error: "Memory not found" }, 404);
+  }
+
+  // Update fields
+  const updatedFields = { ...existing.fields };
+  let newEmbedding: Float32Array | undefined;
+
+  // If question is updated, regenerate embedding
+  if (question && question !== existing.fields.question) {
+    const vector = await generateEmbedding(question);
+    newEmbedding = new Float32Array(vector);
+    updatedFields.question = question;
+  }
+
+  if (answer !== undefined) {
+    updatedFields.answer = answer;
+  }
+  if (category !== undefined) {
+    updatedFields.category = category;
+  }
+  if (source !== undefined) {
+    updatedFields.source = source;
+  }
+
+  // Update the document
+  collection.updateSync({
+    id,
+    vectors: newEmbedding ? { embedding: newEmbedding } : undefined,
+    fields: updatedFields
+  });
+
+  return c.json({ success: true, id, ...updatedFields });
+});
+
 export default router;
