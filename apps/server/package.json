@@ -1,0 +1,31 @@
+{
+  "name": "server",
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "build": "tsdown",
+    "check-types": "tsc -b",
+    "compile": "bun build --compile --minify --sourcemap --bytecode ./src/index.ts --outfile server",
+    "dev": "bun run --hot src/index.ts",
+    "start": "bun run dist/index.mjs"
+  },
+  "dependencies": {
+    "@ai-sdk/anthropic": "^3.0.47",
+    "@ai-sdk/google": "^3.0.31",
+    "@ai-sdk/openai": "^3.0.33",
+    "@job-auto-apply/env": "workspace:*",
+    "@lancedb/lancedb": "^0.26.2",
+    "ai": "^6.0.99",
+    "dotenv": "catalog:",
+    "hono": "^4.8.2",
+    "uuid": "^13.0.0",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@job-auto-apply/config": "workspace:*",
+    "@types/bun": "catalog:",
+    "@types/uuid": "^11.0.0",
+    "tsdown": "^0.16.5",
+    "typescript": "catalog:"
+  }
+}

@@ -1,0 +1,3 @@
+{
+  "extends": "@job-auto-apply/config/tsconfig.base.json"
+}
