@@ -3,7 +3,7 @@
 ## Summary Checklist
 
 - [x] **Phase 1: Local Foundation & Semantic Memory** - Setup local Hono backend, Zvec DB, and basic memory management UI.
-- [ ] **Phase 2: Resume Ingestion & AI Intelligence** - Implement PDF parsing, semantic mapping, and AI provider routing.
+- [x] **Phase 2: Resume Ingestion & AI Intelligence** - Implement PDF parsing, semantic mapping, and AI provider routing.
 - [ ] **Phase 3: Form Detection & Auto-Fill Interaction** - AI-powered form detection and robust field filling for ATS systems.
 - [ ] **Phase 4: Enhancements & Application Tracking** - Add cover letter generation and basic application history.
 
@@ -11,8 +11,8 @@
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Local Foundation & Semantic Memory | 3/4 | In Progress | 2026-02-25 |
-| 2. Resume Ingestion & AI Intelligence | 1/1 | Ready for execution | 2026-02-26 |
+| 1. Local Foundation & Semantic Memory | 4/4 | Complete | 2026-02-25 |
+| 2. Resume Ingestion & AI Intelligence | 1/1 | Complete | 2026-02-25 |
 | 3. Form Detection & Auto-Fill Interaction | 0/0 | Not started | - |
 | 4. Enhancements & Application Tracking | 0/0 | Not started | - |
 
@@ -39,7 +39,7 @@
   3. User can switch between Claude, Gemini, and Qwen providers in real-time within the extension settings.
   4. The system generates natural language questions for fields to facilitate vector similarity matching.
 **Plans**: 1 plan
-- [ ] 02-01-PLAN.md — Resume upload, AI extraction, memory generation, provider switching
+- [x] 02-01-PLAN.md — Resume upload, AI extraction, memory generation, provider switching
 
 ### Phase 3: Form Detection & Auto-Fill Interaction
 **Goal**: Detect forms on live sites and fill them using the semantic memory with robust event simulation.

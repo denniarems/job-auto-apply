@@ -6,7 +6,7 @@
 - [ ] **FORM-01**: Detect job application forms with >80% confidence using AI analysis of DOM structure.
 - [ ] **FORM-02**: Identify form fields semantically and map them to standard categories (personal, salary, experience, etc.).
 - [ ] **FORM-03**: Support "Big Three" ATS systems: Greenhouse, Lever, and Workday.
-- [ ] **FORM-04**: Generate natural language questions for each identified field to facilitate memory matching.
+- [x] **FORM-04**: Generate natural language questions for each identified field to facilitate memory matching.
 
 ### Memory Management (MEM)
 - [ ] **MEM-01**: Store and retrieve user answers using semantic similarity (Zvec vector DB) with an 85% confidence threshold.
@@ -15,9 +15,9 @@
 - [ ] **MEM-04**: Securely store all memories locally on the user's machine (privacy-first).
 
 ### Resume Processing (RES)
-- [ ] **RES-01**: Support PDF resume uploads and extract text using AI-powered parsing.
-- [ ] **RES-02**: Automatically generate memories from extracted resume data (Name, Email, Phone, Skills, Experience).
-- [ ] **RES-03**: Allow users to review and edit extracted data before saving it as memories.
+- [x] **RES-01**: Support PDF resume uploads and extract text using AI-powered parsing.
+- [x] **RES-02**: Automatically generate memories from extracted resume data (Name, Email, Phone, Skills, Experience).
+- [x] **RES-03**: Allow users to review and edit extracted data before saving it as memories.
 
 ### Auto-Fill Execution (FILL)
 - [ ] **FILL-01**: Automatically fill identified fields with memory values using robust event simulation (focus, input, change, blur) for React/Vue compatibility.
@@ -26,8 +26,8 @@
 - [ ] **FILL-04**: Explicitly skip "Honeypot" fields (hidden fields) to avoid bot detection.
 
 ### AI Provider Management (AI)
-- [ ] **AI-01**: Support Claude, Gemini, and Qwen providers via Vercel AI SDK.
-- [ ] **AI-02**: Allow real-time switching between AI providers in the extension settings.
+- [x] **AI-01**: Support Claude, Gemini, and Qwen providers via Vercel AI SDK.
+- [x] **AI-02**: Allow real-time switching between AI providers in the extension settings.
 - [ ] **AI-03**: Securely manage API keys in a local backend `.env` file.
 
 ### UI & UX (UI)
@@ -57,20 +57,20 @@
 | FORM-01 | Phase 3 | Pending |
 | FORM-02 | Phase 3 | Pending |
 | FORM-03 | Phase 3 | Pending |
-| FORM-04 | Phase 2 | Pending |
+| FORM-04 | Phase 2 | Complete |
 | MEM-01 | Phase 1 | Pending |
 | MEM-02 | Phase 1 | Complete |
 | MEM-03 | Phase 1 | Pending |
 | MEM-04 | Phase 1 | Pending |
-| RES-01 | Phase 2 | Pending |
-| RES-02 | Phase 2 | Pending |
-| RES-03 | Phase 2 | Pending |
+| RES-01 | Phase 2 | Complete |
+| RES-02 | Phase 2 | Complete |
+| RES-03 | Phase 2 | Complete |
 | FILL-01 | Phase 3 | Pending |
 | FILL-02 | Phase 3 | Pending |
 | FILL-03 | Phase 3 | Pending |
 | FILL-04 | Phase 3 | Pending |
-| AI-01 | Phase 2 | Pending |
-| AI-02 | Phase 2 | Pending |
+| AI-01 | Phase 2 | Complete |
+| AI-02 | Phase 2 | Complete |
 | AI-03 | Phase 1 | Pending |
 | UI-01 | Phase 1 | Complete |
 | UI-02 | Phase 3 | Pending |

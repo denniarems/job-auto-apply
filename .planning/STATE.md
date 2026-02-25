@@ -8,23 +8,23 @@
 
 ## Current Position
 
-**Phase**: 1 - Local Foundation & Semantic Memory
-**Current Plan**: 03 (completed)
-**Total Plans**: 04
+**Phase**: 2 - Resume Ingestion & AI Intelligence
+**Current Plan**: 01 (completed)
+**Total Plans**: 01
 **Status**: In Progress
 
 **Progress**:
 | Phase | Progress |
 |-------|----------|
 | Phase 1 | [▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓] 100% |
-| Phase 2 | [░░░░░░░░░░░░░░░░░░░░] 0% |
+| Phase 2 | [▓▓▓░░░░░░░░░░░░░░░░░] 50% |
 | Phase 3 | [░░░░░░░░░░░░░░░░░░░░] 0% |
 | Phase 4 | [░░░░░░░░░░░░░░░░░░░░] 0% |
 
 ## Performance Metrics
-- **Requirements Covered**: 23/23 (100% v1 coverage)
+- **Requirements Covered**: 29/29 (100% v1 coverage including new AI and Form-04)
 - **Phase Completion**: 1/4
-- **Success Criteria Met**: 3/15
+- **Success Criteria Met**: 4/16
 
 ## Accumulated Context
 
@@ -32,15 +32,17 @@
 - **2026-02-25**: Adopted 4-phase roadmap focusing on Local Foundation -> Resume AI -> Form Interaction -> UX Polish.
 - **2026-02-25**: Decided to include v1.1 features (Cover letters, tracking) in Phase 4 to ensure a complete v1 delivery.
 - **2026-02-26**: PATCH endpoint regenerates embedding only when question changes to maintain searchability.
+- **2026-02-25**: Used Vercel AI SDK for unified multi-provider support (Anthropic/Gemini/OpenAI).
+- **2026-02-25**: Confidence indicators per field help users identify fields needing review.
+- **2026-02-25**: Questions generated for each extracted field enable semantic memory search.
 
 ### Todos
-- [ ] Initialize Phase 1 plan (`/gsd:plan-phase 1`)
-- [ ] Verify local Bun workspace setup for Hono and WXT.
+- [ ] Complete remaining Phase 2 plans
 
 ### Blockers
 - None.
 
 ## Session Continuity
 
-**Last Action**: Completed plan 01-03 - Extension Memories UI with view/edit/delete functionality.
-**Next Step**: Ready for plan 01-04 or continue with remaining Phase 1 plans.
+**Last Action**: Completed plan 02-01 - Resume Ingestion & AI Intelligence with PDF upload, AI extraction, memory generation, and provider switching.
+**Next Step**: Ready for next Phase 2 plan (02-02) or continue with Phase 2 completion.
