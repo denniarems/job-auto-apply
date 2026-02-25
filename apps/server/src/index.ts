@@ -2,8 +2,10 @@ import { env } from "@job-auto-apply/env/server";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
-import { initDb, collection } from "./db/db";
+import { initDb, memoriesTable } from "./db/zvec";
 import memories from "./routes/memories";
+import resumes from "./routes/resumes";
+import providers from "./routes/providers";
 
 const app = new Hono();
 
@@ -34,15 +36,19 @@ app.get("/", (c) => {
 app.get("/health", (c) => {
   return c.json({
     status: "ok",
-    database: collection ? "connected" : "disconnected",
+    database: memoriesTable ? "connected" : "disconnected",
     keys: {
       anthropic: !!env.ANTHROPIC_API_KEY,
       openai: !!env.OPENAI_API_KEY,
+      google: !!env.GOOGLE_GENERATIVE_AI_API_KEY,
+      qwen: !!env.QWEN_API_KEY,
     },
   });
 });
 
 app.route("/api/memories", memories);
+app.route("/api/resumes", resumes);
+app.route("/api/providers", providers);
 
 export default {
   port: env.PORT,
