@@ -11,6 +11,11 @@ interface ResumeUploadProps {
       value: string;
       category: string;
     }>;
+    confidences: Array<{
+      field: string;
+      confidence: "high" | "medium" | "low";
+      originalValue: string;
+    }>;
   }) => void;
   onError: (error: string) => void;
   backendUrl: string;

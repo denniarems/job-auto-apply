@@ -1,12 +1,16 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useBackendStatus } from "@/hooks/useBackendStatus";
 import { Memories } from "./Memories";
+import { ResumeUpload } from "./ResumeUpload";
+import { ResumeReview } from "./ResumeReview";
 import { 
   Rocket, 
   Brain,
   FileText, 
   Settings as SettingsIcon,
-  Circle
+  Circle,
+  Check,
+  AlertCircle
 } from "lucide-react";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -15,9 +19,127 @@ function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+const DEFAULT_BACKEND_URL = "http://localhost:3000";
+
+interface ResumeData {
+  fullName?: string;
+  email?: string;
+  phone?: string;
+  location?: string;
+  summary?: string;
+  workExperience?: Array<{
+    company: string;
+    title: string;
+    startDate?: string;
+    endDate?: string;
+    current?: boolean;
+    description?: string;
+  }>;
+  education?: Array<{
+    institution: string;
+    degree: string;
+    field?: string;
+    graduationDate?: string;
+  }>;
+  skills?: string[];
+  certifications?: string[];
+  languages?: string[];
+  projects?: Array<{
+    name: string;
+    description?: string;
+    technologies?: string[];
+    url?: string;
+  }>;
+  links?: string[];
+}
+
+interface ResumeQuestion {
+  field: string;
+  question: string;
+  value: string;
+  category: string;
+}
+
+interface ResumeConfidence {
+  field: string;
+  confidence: "high" | "medium" | "low";
+  originalValue: string;
+}
+
+interface UploadedResume {
+  id: string;
+  data: ResumeData;
+  questions: ResumeQuestion[];
+  confidences: ResumeConfidence[];
+}
+
 export default function App() {
   const [activeTab, setActiveTab] = useState("main");
+  const [backendUrl, setBackendUrl] = useState(DEFAULT_BACKEND_URL);
+  const [selectedProvider, setSelectedProvider] = useState("anthropic");
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [uploadSuccess, setUploadSuccess] = useState(false);
+  const [currentResume, setCurrentResume] = useState<UploadedResume | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
   const { status } = useBackendStatus();
+
+  // Load settings from chrome.storage
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const win = window as unknown as { chrome?: { storage?: { local?: { get: (keys: string[]) => Promise<Record<string, string>> } } } };
+        if (win.chrome?.storage?.local) {
+          const result = await win.chrome.storage.local.get(["backendUrl", "selectedProvider"]);
+          if (result.backendUrl) setBackendUrl(result.backendUrl);
+          if (result.selectedProvider) setSelectedProvider(result.selectedProvider);
+        }
+      } catch (e) {
+        console.log("Could not load settings:", e);
+      }
+    };
+    loadSettings();
+  }, []);
+
+  const handleUploadComplete = (resume: {
+    id: string;
+    data: Record<string, unknown>;
+    questions: Array<{
+      field: string;
+      question: string;
+      value: string;
+      category: string;
+    }>;
+    confidences: Array<{
+      field: string;
+      confidence: "high" | "medium" | "low";
+      originalValue: string;
+    }>;
+  }) => {
+    setCurrentResume(resume as unknown as UploadedResume);
+    setUploadSuccess(true);
+    setUploadError(null);
+  };
+
+  const handleUploadError = (error: string) => {
+    setUploadError(error);
+    setUploadSuccess(false);
+  };
+
+  const handleSaveComplete = async (approvedFields: ResumeData) => {
+    setIsSaving(true);
+    // The ResumeReview component handles the API call
+    // Just show success and reset
+    setTimeout(() => {
+      setIsSaving(false);
+      setCurrentResume(null);
+      setUploadSuccess(false);
+      setActiveTab("memories");
+    }, 1000);
+  };
+
+  const handleCancelReview = () => {
+    setCurrentResume(null);
+  };
 
   return (
     <div className="w-full h-screen bg-white flex flex-col font-sans text-slate-900">
@@ -60,10 +182,14 @@ export default function App() {
               <label className="text-xs font-bold text-slate-400 uppercase tracking-wider text-left block">
                 AI Provider
               </label>
-              <select className="w-full p-3 bg-slate-100 border-none rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500 transition-all outline-none">
-                <option>Claude (Recommended)</option>
-                <option>Gemini</option>
-                <option>Qwen</option>
+              <select 
+                value={selectedProvider}
+                onChange={(e) => setSelectedProvider(e.target.value)}
+                className="w-full p-3 bg-slate-100 border-none rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500 transition-all outline-none"
+              >
+                <option value="anthropic">Claude (Recommended)</option>
+                <option value="google">Gemini</option>
+                <option value="openai">OpenAI</option>
               </select>
             </div>
           </div>
@@ -75,11 +201,41 @@ export default function App() {
 
         {activeTab === "resumes" && (
           <div className="space-y-4">
-            <h2 className="text-lg font-bold">Resumes</h2>
-            <div className="bg-slate-50 border-2 border-dashed rounded-xl p-8 text-center text-slate-400">
-              <FileText className="w-12 h-12 mx-auto mb-2 opacity-20" />
-              <p>No resumes uploaded.</p>
-            </div>
+            {!currentResume ? (
+              <>
+                <h2 className="text-lg font-bold">Upload Resume</h2>
+                
+                {/* Success Message */}
+                {uploadSuccess && (
+                  <div className="flex items-center gap-2 p-4 bg-green-50 border border-green-200 rounded-xl text-green-700">
+                    <Check className="w-5 h-5" />
+                    <span>Resume uploaded! Review and save.</span>
+                  </div>
+                )}
+
+                {/* Error Message */}
+                {uploadError && (
+                  <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700">
+                    <AlertCircle className="w-5 h-5" />
+                    <span>{uploadError}</span>
+                  </div>
+                )}
+
+                <ResumeUpload
+                  backendUrl={backendUrl}
+                  selectedProvider={selectedProvider}
+                  onUploadComplete={handleUploadComplete}
+                  onError={handleUploadError}
+                />
+              </>
+            ) : (
+              <ResumeReview
+                resume={currentResume}
+                backendUrl={backendUrl}
+                onSave={handleSaveComplete}
+                onCancel={handleCancelReview}
+              />
+            )}
           </div>
         )}
 
@@ -87,6 +243,16 @@ export default function App() {
           <div className="space-y-4">
             <h2 className="text-lg font-bold">Settings</h2>
             <div className="p-4 bg-slate-50 rounded-xl space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Backend URL</span>
+                <input
+                  type="text"
+                  value={backendUrl}
+                  onChange={(e) => setBackendUrl(e.target.value)}
+                  className="text-sm text-slate-500 border rounded px-2 py-1"
+                  placeholder="http://localhost:3000"
+                />
+              </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">Local Backend Port</span>
                 <span className="text-sm text-slate-500">3000</span>
