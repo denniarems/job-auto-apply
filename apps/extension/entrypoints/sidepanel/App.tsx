@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useBackendStatus } from "@/hooks/useBackendStatus";
+import { Memories } from "./Memories";
 import { 
   Rocket, 
-  Brain, 
+  Brain,
   FileText, 
   Settings as SettingsIcon,
   Circle
@@ -69,13 +70,7 @@ export default function App() {
         )}
 
         {activeTab === "memories" && (
-          <div className="space-y-4">
-            <h2 className="text-lg font-bold">Your Memories</h2>
-            <div className="bg-slate-50 border-2 border-dashed rounded-xl p-8 text-center text-slate-400">
-              <Brain className="w-12 h-12 mx-auto mb-2 opacity-20" />
-              <p>No memories stored yet.</p>
-            </div>
-          </div>
+          <Memories />
         )}
 
         {activeTab === "resumes" && (
