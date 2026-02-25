@@ -9,8 +9,9 @@
 ## Current Position
 
 **Phase**: 1 - Local Foundation & Semantic Memory
-**Plan**: 01-01, 01-02, 01-03
-**Status**: DONE
+**Current Plan**: 02 (completed)
+**Total Plans**: 04
+**Status**: In Progress
 
 **Progress**:
 | Phase | Progress |
@@ -30,6 +31,7 @@
 ### Decisions
 - **2026-02-25**: Adopted 4-phase roadmap focusing on Local Foundation -> Resume AI -> Form Interaction -> UX Polish.
 - **2026-02-25**: Decided to include v1.1 features (Cover letters, tracking) in Phase 4 to ensure a complete v1 delivery.
+- **2026-02-26**: PATCH endpoint regenerates embedding only when question changes to maintain searchability.
 
 ### Todos
 - [ ] Initialize Phase 1 plan (`/gsd:plan-phase 1`)
@@ -40,5 +42,5 @@
 
 ## Session Continuity
 
-**Last Action**: Successfully executed Phase 1 (Foundation, DB, CRUD, UI).
-**Next Step**: Discuss Phase 2 (`/gsd:discuss-phase 2 --auto`).
+**Last Action**: Completed plan 01-02 - Memory Store API with PATCH endpoint.
+**Next Step**: Ready for plan 01-03 or continue with remaining Phase 1 plans.

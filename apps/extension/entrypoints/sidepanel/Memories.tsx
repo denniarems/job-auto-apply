@@ -59,17 +59,14 @@ export function Memories() {
   };
 
   const handleSaveEdit = async (id: string) => {
-    // Delete and recreate (no PATCH endpoint)
+    // Use PATCH endpoint to update
     try {
-      await handleDelete(id);
-      const res = await fetch("http://localhost:3000/api/memories", {
-        method: "POST",
+      const res = await fetch(`http://localhost:3000/api/memories/${id}`, {
+        method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           question: editForm.question,
           answer: editForm.answer,
-          category: "manual",
-          source: "manual_edit",
         }),
       });
       if (res.ok) {
