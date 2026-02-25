@@ -253,6 +253,24 @@ export default function App() {
                   placeholder="http://localhost:3000"
                 />
               </div>
+              
+              {/* Provider Selection */}
+              <div className="pt-3 border-t">
+                <h3 className="text-sm font-semibold text-slate-600 mb-2">AI Provider</h3>
+                <select
+                  value={selectedProvider}
+                  onChange={(e) => setSelectedProvider(e.target.value)}
+                  className="w-full p-3 bg-white border rounded-xl text-sm font-medium"
+                >
+                  <option value="anthropic">Claude (Recommended)</option>
+                  <option value="google">Gemini</option>
+                  <option value="openai">OpenAI</option>
+                </select>
+                <p className="text-xs text-slate-400 mt-2">
+                  API key status: Check backend /health endpoint
+                </p>
+              </div>
+              
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">Local Backend Port</span>
                 <span className="text-sm text-slate-500">3000</span>
