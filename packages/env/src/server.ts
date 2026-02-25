@@ -10,6 +10,7 @@ export const env = createEnv({
     OPENAI_API_KEY: z.string().optional(),
     GOOGLE_GENERATIVE_AI_API_KEY: z.string().optional(),
     QWEN_API_KEY: z.string().optional(),
+    LANCEDB_API_KEY: z.string().optional(),
     PORT: z.coerce.number().default(3000),
   },
   runtimeEnv: process.env,

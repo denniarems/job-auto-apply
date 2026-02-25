@@ -13,7 +13,11 @@ export async function initDb() {
     fs.mkdirSync(DB_DIR, { recursive: true });
   }
 
-  const db = await lancedb.connect(DB_DIR);
+  const db = await lancedb.connect({
+  uri: "db://job-qyypwq",
+  apiKey: process.env.LANCEDB_API_KEY,
+  region: "us-east-1"
+});
 
   const createTableData = [
     {
