@@ -117,7 +117,7 @@ Phase 1 (Backend Integration)
 | **Vercel AI SDK** | Naming collision with Hono's `streamText`. | Import Vercel's as `streamText` and use `toDataStreamResponse()`. |
 | **Bun Runtime** | Streaming responses hanging in production. | Use `toTextStreamResponse()` or ensure Bun 1.1+; test in prod environment. |
 | **Greenhouse** | Ignoring "Real Talent" AI detection. | Vary phrasing in AI-generated cover letters; avoid identical mass-templates. |
-| **Zvec DB** | Not handling concurrent writes from multiple tabs. | Use the Hono backend as the single source of truth for DB writes. |
+| **LanceDB** | Not handling concurrent writes from multiple tabs. | Use the Hono backend as the single source of truth for DB writes. |
 
 ## Performance Traps
 
@@ -156,7 +156,7 @@ Phase 1 (Backend Integration)
 |---------|---------------|----------------|
 | **Shadow Ban** | HIGH | Change browser profile, use a VPN/Proxy, and slow down application frequency. |
 | **State Loss (MV3)** | MEDIUM | Implement robust `browser.storage` persistence for all "In-Progress" applications. |
-| **Incorrect Memory Fill** | LOW | User corrects the field; extension captures the correction and updates Zvec DB. |
+| **Incorrect Memory Fill** | LOW | User corrects the field; extension captures the correction and updates LanceDB. |
 | **CORS Block** | MEDIUM | Refactor all network calls to use the Background Service Worker as a proxy. |
 
 ## Pitfall-to-Phase Mapping

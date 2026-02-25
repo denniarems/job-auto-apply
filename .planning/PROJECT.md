@@ -17,7 +17,7 @@ Reduce job application time by 80% through intelligent, local-first, semantic fo
 ### Active
 
 - [ ] AI form detection and semantic field mapping
-- [ ] Zvec vector DB integration for semantic memory storage
+- [ ] LanceDB vector DB integration for semantic memory storage
 - [ ] Auto-fill fields with visual source indicators (memory/resume/manual)
 - [ ] User input dialog for missing fields and memory saving
 - [ ] Resume upload and AI-powered text/data extraction
@@ -30,7 +30,7 @@ Reduce job application time by 80% through intelligent, local-first, semantic fo
 
 ### Out of Scope
 
-- [Cloud Storage / Cloud Sync] — Privacy first, local Zvec DB only to prevent data leaks.
+- [Cloud Storage / Cloud Sync] — Privacy first, local LanceDB only to prevent data leaks.
 - [Auto-Submit Automation] — To avoid ToS violations on job boards, users must manually submit.
 - [Authentication] — Designed for personal use on localhost only.
 - [Firefox/Safari/Edge Support] — Chrome extension scope for V1.
@@ -39,13 +39,13 @@ Reduce job application time by 80% through intelligent, local-first, semantic fo
 ## Context
 
 - The project relies heavily on the Vercel AI SDK to abstract interactions with Claude, Gemini, and Qwen, using them for form analysis, data extraction, and cover letter generation.
-- The system adopts a strict local-first architecture using a local node server (Hono) and an in-process vector DB (Zvec) for embedding storage and semantic search.
+- The system adopts a strict local-first architecture using a local node server (Hono) and an in-process vector DB (LanceDB) for embedding storage and semantic search.
 - The UI is built using React in WXT for the Chrome extension, with all data passing between the extension and local backend over HTTP.
 - To maintain flexibility, users can swap AI providers dynamically, requiring secure, local management of API keys in a backend `.env`.
 
 ## Constraints
 
-- **Tech Stack**: Bun Runtime, Hono Backend, WXT Extension, React UI, Zvec DB, Vercel AI SDK. — Required architecture to balance speed, local processing, and flexibility.
+- **Tech Stack**: Bun Runtime, Hono Backend, WXT Extension, React UI, LanceDB, Vercel AI SDK. — Required architecture to balance speed, local processing, and flexibility.
 - **Privacy**: All data MUST be stored locally (no cloud syncing) — Core user expectation for sensitive job search data.
 - **Safety**: Forms MUST NOT be auto-submitted — Ensures compliance with job board Terms of Service.
 - **Deployment**: Extension and Backend run independently but must communicate over `localhost:3000`.
@@ -54,7 +54,7 @@ Reduce job application time by 80% through intelligent, local-first, semantic fo
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Use Zvec for memory | Provides fast, local vector search for semantic field matching without cloud reliance. | — Pending |
+| Use LanceDB for memory | Provides fast, local vector search for semantic field matching without cloud reliance. | — Complete |
 | Adopt Vercel AI SDK | Enables easy switching between Claude, Gemini, and Qwen without massive code changes. | — Pending |
 | Manual Submit Only | Keeps the tool compliant with job board policies while still delivering 80% time savings. | — Pending |
 | Chrome Manifest V3 | Required for modern Chrome extensions, using Service Worker and Content Scripts to manipulate DOM. | — Pending |

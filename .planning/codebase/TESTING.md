@@ -54,7 +54,7 @@ bun test              # Run all unit/integration tests via Bun
 - Test multi-step forms and non-job forms.
 
 **Memory System (MEM):**
-- Test exact and semantic matches in the Zvec vector database.
+- Test exact and semantic matches in the LanceDB vector database.
 - Test CRUD operations on stored memories.
 
 **Resume Parsing (RES):**

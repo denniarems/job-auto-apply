@@ -2,7 +2,7 @@
 
 ## Summary Checklist
 
-- [x] **Phase 1: Local Foundation & Semantic Memory** - Setup local Hono backend, Zvec DB, and basic memory management UI.
+- [x] **Phase 1: Local Foundation & Semantic Memory** - Setup local Hono backend, LanceDB, and basic memory management UI.
 - [x] **Phase 2: Resume Ingestion & AI Intelligence** - Implement PDF parsing, semantic mapping, and AI provider routing.
 - [ ] **Phase 3: Form Detection & Auto-Fill Interaction** - AI-powered form detection and robust field filling for ATS systems.
 - [ ] **Phase 4: Enhancements & Application Tracking** - Add cover letter generation and basic application history.
@@ -23,7 +23,7 @@
 **Depends on**: Nothing
 **Requirements**: MEM-01, MEM-02, MEM-03, MEM-04, AI-03, UI-01
 **Success Criteria**:
-  1. Local Hono server and Zvec DB are running and communicating over localhost.
+  1. Local Hono server and LanceDB are running and communicating over localhost.
   2. User can manually add a memory entry (question/answer pair) and see it persisted in the local vector DB.
   3. User can view, edit, and delete stored memories through the extension popup or a local dashboard.
   4. API keys are securely managed in a local `.env` file on the backend.
@@ -35,7 +35,7 @@
 **Requirements**: RES-01, RES-02, RES-03, AI-01, AI-02, FORM-04
 **Success Criteria**:
   1. User can upload a PDF resume and see extracted data (Name, Email, Skills, etc.) in a review panel.
-  2. User can approve extracted resume data to be automatically converted into semantic memories in Zvec.
+  2. User can approve extracted resume data to be automatically converted into semantic memories in LanceDB.
   3. User can switch between Claude, Gemini, and Qwen providers in real-time within the extension settings.
   4. The system generates natural language questions for fields to facilitate vector similarity matching.
 **Plans**: 1 plan

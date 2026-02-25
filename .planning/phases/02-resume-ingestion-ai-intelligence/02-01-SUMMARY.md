@@ -7,7 +7,7 @@ tags: [pdf, ai-extraction, memory-generation, multi-provider]
 # Dependency graph
 requires:
   - phase: 01-local-foundation
-    provides: Database (Zvec), Memories API, Extension UI foundation
+    provides: Database (LanceDB), Memories API, Extension UI foundation
 provides:
   - PDF resume upload endpoint (/api/resumes/upload)
   - Resume approval endpoint (/api/resumes/approve)

@@ -40,7 +40,7 @@
 - dotenv `^17.2.2` - Environment variable loading
 
 **Infrastructure:**
-- Zvec `^0.1.0` - Local vector storage (Planned per `prd.md`)
+- LanceDB `^0.26.2` - Local vector storage (Implemented)
 - Vercel AI SDK `^3.0.0` - Unified AI provider interface (Planned per `prd.md`)
 
 ## Configuration

@@ -9,7 +9,7 @@
 - [x] **FORM-04**: Generate natural language questions for each identified field to facilitate memory matching.
 
 ### Memory Management (MEM)
-- [ ] **MEM-01**: Store and retrieve user answers using semantic similarity (Zvec vector DB) with an 85% confidence threshold.
+- [ ] **MEM-01**: Store and retrieve user answers using semantic similarity (LanceDB vector DB) with an 85% confidence threshold.
 - [x] **MEM-02**: Support manual editing and deletion of stored memories via a dedicated UI.
 - [ ] **MEM-03**: Track memory usage and last-used timestamps to prioritize relevant answers.
 - [ ] **MEM-04**: Securely store all memories locally on the user's machine (privacy-first).

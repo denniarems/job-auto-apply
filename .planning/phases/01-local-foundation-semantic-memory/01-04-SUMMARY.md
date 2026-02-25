@@ -15,7 +15,7 @@
 ## Verification results
 - **Type Checking**: `tsc --noEmit` passed in `apps/server`.
 - **CORS Configuration**: Verified origin logic in `apps/server/src/index.ts`.
-- **Database Schema**: Verified 1536-dim vector schema for LanceDB in `apps/server/src/db/zvec.ts`.
+- **Database Schema**: Verified 1536-dim vector schema for LanceDB in `apps/server/src/db/lancedb.ts`.
 
 ---
 *Created: 2026-02-25*

@@ -6,7 +6,7 @@
 <domain>
 ## Phase Boundary
 
-Enable the system to ingest user PDF resumes and convert extracted data into semantic memories. Includes AI provider routing for extraction and switching. User can upload, review, edit, and approve extracted data to be stored as memories in Zvec. Form detection and auto-fill are separate phases.
+Enable the system to ingest user PDF resumes and convert extracted data into semantic memories. Includes AI provider routing for extraction and switching. User can upload, review, edit, and approve extracted data to be stored as memories in LanceDB. Form detection and auto-fill are separate phases.
 
 </domain>
 

@@ -18,8 +18,8 @@
 ## Data Storage
 
 **Databases:**
-- Zvec (Local Vector DB)
-  - Connection: Local file path `ZVEC_DB_PATH`
+- LanceDB (Local Vector DB)
+  - Connection: Local file path `~/.job-auto-apply`
   - Client: Custom DB client/wrapper for vector storage
 
 **File Storage:**

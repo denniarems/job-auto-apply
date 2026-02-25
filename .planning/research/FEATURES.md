@@ -22,7 +22,7 @@ Features that set this product apart.
 
 | Feature | Value Proposition | Complexity | Notes |
 |---------|-------------------|------------|-------|
-| **Semantic Memory (Zvec)** | Learns from corrections; remembers "weird" fields across different sites. | High | Local-first vector search is unique. |
+| **Semantic Memory (LanceDB)** | Learns from corrections; remembers "weird" fields across different sites. | High | Local-first vector search is unique. |
 | **Visual Source Indicators** | Shows *why* a field was filled (from Resume, Memory, or AI guess). | Medium | High transparency and trust. |
 | **Cover Letter Generation** | Tailors content to JD + Resume instantly. | Medium | Uses LLM to reduce drafting time. |
 | **Shadow DOM Overlay** | Integrated UI that doesn't break site layout. | Medium | Better UX than standard popups. |
@@ -41,9 +41,9 @@ Features to explicitly NOT build to maintain safety and compliance.
 
 ```
 Resume Parsing → Basic Auto-fill
-Basic Auto-fill → Semantic Memory (Zvec)
+Basic Auto-fill → Semantic Memory (LanceDB)
 AI Mapping → Cover Letter Generation
-Zvec Integration → Contextual Memory Management
+LanceDB Integration → Contextual Memory Management
 ```
 
 ## MVP Recommendation
@@ -51,7 +51,7 @@ Zvec Integration → Contextual Memory Management
 Prioritize:
 1. **Resume Parsing & Extraction**: Core data source.
 2. **AI-Powered Form Mapping**: Using Vercel AI SDK to match fields.
-3. **Basic Memory (Local)**: Saving corrections to Zvec.
+3. **Basic Memory (Local)**: Saving corrections to LanceDB.
 4. **Chrome Popup UI**: AI provider selection and status.
 
 Defer: **Cover Letter PDF Export**, **Advanced Application Tracking**.

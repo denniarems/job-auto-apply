@@ -6,15 +6,15 @@
 <domain>
 ## Phase Boundary
 
-Establish the core local-first infrastructure: a Hono backend server using Zvec for persistent semantic memory, and a foundational Chrome extension popup that communicates with this backend.
+Establish the core local-first infrastructure: a Hono backend server using LanceDB for persistent semantic memory, and a foundational Chrome extension popup that communicates with this backend.
 
 </domain>
 
 <decisions>
 ## Implementation Decisions
 
-### Zvec Persistence
-- **Storage Location**: The Zvec database file will be stored in the user's home directory under `~/.job-auto-apply` to ensure data persists across monorepo updates or cleanups.
+### LanceDB Persistence
+- **Storage Location**: The LanceDB database file will be stored in the user's home directory under `~/.job-auto-apply` to ensure data persists across monorepo updates or cleanups.
 - **Collection Structure**: Multiple collections will be used (e.g., `memories`, `form_templates`) to allow for cleaner separation as the project grows.
 - **Initialization**: The backend will auto-create the directory and DB file on startup if they are missing.
 - **Persistence**: Data will be written to disk immediately to ensure persistence.

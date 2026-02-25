@@ -59,7 +59,7 @@
 ## Missing Critical Features
 
 **Core PRD Implementation:**
-- Problem: AI routing, Vector DB (Zvec), Extension Background/Popup/Options, Resume Parsing, and Memory Management are completely unimplemented.
+- Problem: AI routing, Vector DB (LanceDB), Extension Background/Popup/Options, Resume Parsing, and Memory Management are completely unimplemented.
 - Blocks: The entirety of the "Job Auto-Apply Chrome Extension" feature set defined in `prd.md`.
 
 ## Test Coverage Gaps

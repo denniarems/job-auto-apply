@@ -45,7 +45,7 @@
 5. Hono app instance is created using validated `env.CORS_ORIGIN`.
 
 **State Management:**
-- Not currently implemented in the codebase (planned use of Zvec database for state/memories).
+- Not currently implemented in the codebase (planned use of LanceDB for state/memories).
 
 ## Key Abstractions
 

@@ -47,7 +47,7 @@ skipped: 0
   test: 1
   root_cause: "Using LanceDB for Windows compatibility (Zvec doesn't have Windows binaries)"
   artifacts:
-    - path: "apps/server/src/db/zvec.ts"
+    - path: "apps/server/src/db/lancedb.ts"
       issue: "File renamed from db.ts, now uses LanceDB"
     - path: "apps/server/package.json"
       issue: "Uses @lancedb/lancedb for vector database"
