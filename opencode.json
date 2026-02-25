@@ -1,10 +1,26 @@
 {
+  "$schema": "https://opencode.ai/config.json",
   "mcp": {
     "context7": {
+      "type": "remote",
+      "url": "https://mcp.context7.com/mcp",
+      "headers": {
+        "CONTEXT7_API_KEY": "ctx7sk-8bde2c86-2dc9-4ac6-ae26-6c02e7a1b99a"
+      },
+      "enabled": true
+    },
+    "MiniMax": {
       "type": "local",
-      "command": ["npx", "-y", "@upstash/context7-mcp"],
-      "enabled": true,
-      "environment": {}
+      "command": [
+        "uvx",
+        "minimax-coding-plan-mcp",
+        "-y"
+      ],
+      "environment": {
+        "MINIMAX_API_KEY": "sk-cp-frgTnidLBpm60-6L7qtA7kwUmDutetFfxGf7VZZLRG0zW-OxJoYErPSHgh4E7G9Tyq7MRBdCeblLs4_UQNyZcNpXOnK3rtMULyR2Cb0OkkvqPD7Yl_XHw5I",
+        "MINIMAX_API_HOST": "https://api.minimax.io"
+      },
+      "enabled": true
     }
   }
 }

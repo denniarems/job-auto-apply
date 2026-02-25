@@ -1,4 +1,5 @@
 {
+  "$schema": "https://opencode.ai/config.json",
   "permission": {
     "read": {
       "D:/code/job-auto-apply/.opencode/get-shit-done/*": "allow"
