@@ -2,12 +2,12 @@
 phase: 01-local-foundation-semantic-memory
 plan: 02
 subsystem: api
-tags: [hono, zvec, memory, api]
+tags: [hono, lancedb, memory, api]
 
 # Dependency graph
 requires:
   - phase: 01-local-foundation-semantic-memory
-    provides: Zvec database setup and initialization
+    provides: LanceDB database setup and initialization
 provides:
   - POST /api/memories - Store memory with question/answer/embedding
   - GET /api/memories/search - Semantic search with 85% threshold
@@ -33,7 +33,7 @@ key-decisions:
   - "PATCH endpoint regenerates embedding only when question changes"
 
 patterns-established:
-  - "Memory CRUD operations via Zvec sync methods"
+  - "Memory CRUD operations via LanceDB methods"
   - "Usage tracking with usage_count and last_used timestamps"
 
 requirements-completed: [MEM-01, MEM-02, MEM-03]
@@ -45,7 +45,7 @@ completed: 2026-02-26
 
 # Phase 1 Plan 2: Memory Store API Summary
 
-**Hono API endpoints for storing and searching semantic memories using Zvec vector similarity**
+**Hono API endpoints for storing and searching semantic memories using LanceDB vector similarity**
 
 ## Performance
 
@@ -83,7 +83,7 @@ completed: 2026-02-26
 None - plan executed exactly as written.
 
 ## Issues Encountered
-- Zvec prebuilt binaries not available for win32-x64 (pre-existing platform limitation)
+- Zvec prebuilt binaries not available for win32-x64 (switched to LanceDB)
 
 ## Next Phase Readiness
 - Memory API is complete and ready for Phase 2 integration

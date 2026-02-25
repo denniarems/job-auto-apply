@@ -15,8 +15,8 @@ The system follows a **local-first distributed architecture** spread across thre
 | **Content Script** | DOM scanning, form field detection, UI overlays, field injection. | Service Worker (Messaging) |
 | **Extension UI (Popup/Overlay)** | AI provider selection, manual field entry, status display, memory management. | Service Worker, Hono Backend (HTTP) |
 | **Service Worker** | State orchestration, message routing, API key management (extension-side). | Content Script, Extension UI, Hono Backend |
-| **Hono Backend** | Form analysis logic, resume parsing, AI provider routing, memory retrieval. | Extension, Zvec DB, AI Providers (External) |
-| **Zvec DB** | In-process semantic memory storage. Persistent storage of embeddings. | Hono Backend (In-process) |
+| **Hono Backend** | Form analysis logic, resume parsing, AI provider routing, memory retrieval. | Extension, LanceDB, AI Providers (External) |
+| **LanceDB** | Embedded semantic memory storage. Persistent storage of embeddings. | Hono Backend |
 | **Vercel AI SDK** | Unified interface for Claude, Gemini, and Qwen. | Hono Backend, External AI Providers |
 
 ### Data Flow
@@ -25,14 +25,14 @@ The system follows a **local-first distributed architecture** spread across thre
 1. **Detection**: Content Script scans for forms on page load or DOM change.
 2. **Schema Extraction**: Content Script builds a JSON schema of the form (labels, types, IDs) and sends it to the **Service Worker**.
 3. **Enrichment**: Service Worker forwards the request to **Hono Backend** (`localhost:3000`).
-4. **Semantic Search**: Hono Backend generates embeddings for form fields and queries **Zvec DB** for matching "Memory" items.
+4. **Semantic Search**: Hono Backend generates embeddings for form fields and queries **LanceDB** for matching "Memory" items.
 5. **AI Inference**: Hono uses **Vercel AI SDK** to map the user's profile/resume and semantic memory to the specific form schema.
 6. **Injection**: Hono returns a mapping object. Content Script iterates and injects values into the DOM, triggering native input events.
 
 #### 2. Continuous Learning (Memory)
 1. **Capture**: User corrects an auto-filled field or fills a missing one.
 2. **Submission**: User clicks "Save to Memory" in the extension overlay.
-3. **Storage**: Hono Backend generates an embedding for the field label/context and stores it + the value in **Zvec DB**.
+3. **Storage**: Hono Backend generates an embedding for the field label/context and stores it + the value in **LanceDB**.
 
 ## Patterns to Follow
 
@@ -48,7 +48,7 @@ shadowRoot.appendChild(indicator);
 ```
 
 ### Pattern 2: Local-First Semantic Retrieval
-**What:** Use Zvec for fast, local vector search. 
+**What:** Use LanceDB for fast, local vector search.
 **When:** Matching a form field (e.g., "Tell us about a time you failed") to a stored memory chunk.
 **Why:** Maintains privacy by keeping sensitive personal history local while providing "smarter than keyword" matching.
 
@@ -69,12 +69,12 @@ shadowRoot.appendChild(indicator);
 | Concern | At 100 users | At 10K users | At 1M users |
 |---------|--------------|--------------|-------------|
 | **Latency** | Sub-100ms local calls. | Stable (Local-first). | Stable (Local-first). |
-| **Zvec Search** | Instant (<1ms). | Instant (<5ms). | Fast (<20ms) due to in-process nature. |
+| **LanceDB Search** | Instant (<1ms). | Instant (<5ms). | Fast (<20ms) due to embedded nature. |
 | **Privacy** | Zero data leak. | Zero data leak. | Zero data leak. |
 
 ## Suggested Build Order
 
-1. **Phase 1: Local Foundation** (Hono + Zvec): Ensure data can be stored and retrieved semantically on localhost.
+1. **Phase 1: Local Foundation** (Hono + LanceDB): Ensure data can be stored and retrieved semantically on localhost.
 2. **Phase 2: Extension Plumbing** (WXT + Content Script): Establish the communication bridge between the browser page and the local server.
 3. **Phase 3: Semantic Engine**: Implement the Vercel AI SDK mapping logic and resume parsing.
 4. **Phase 4: UI/UX Overlay**: Add the Shadow DOM indicators and user correction dialogs.
@@ -82,7 +82,7 @@ shadowRoot.appendChild(indicator);
 ## Sources
 
 - [Chrome Extension Documentation - Architecture](https://developer.chrome.com/docs/extensions/mv3/architecture-overview/)
-- [Zvec Vector DB Official Docs](https://zvec.org/en/docs)
+- [LanceDB Documentation](https://lancedb.com)
 - [Vercel AI SDK Documentation](https://sdk.vercel.ai/docs)
 - [Hono Web Framework](https://hono.dev)
 - [WXT Framework](https://wxt.dev)

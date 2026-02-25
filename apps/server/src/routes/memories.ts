@@ -1,8 +1,7 @@
 import { Hono } from "hono";
 import { generateEmbedding } from "../lib/ai";
-import { collection } from "../db/db";
+import { memoriesTable } from "../db/lancedb";
 import { v4 as uuidv4 } from "uuid";
-import * as zvec from "@zvec/zvec";
 
 const router = new Hono();
 
@@ -12,23 +11,23 @@ router.post("/", async (c) => {
   const vector = await generateEmbedding(question);
   const now = Date.now();
 
-  const doc: zvec.ZVecDocInput = {
-    id: uuidv4(),
-    vectors: { "embedding": new Float32Array(vector) },
-    fields: {
+  const id = uuidv4();
+
+  await memoriesTable.add([
+    {
+      id,
       question,
       answer,
-      category,
-      source,
-      usage_count: 0,
-      last_used: now,
-      created_at: now,
+      category: category || "",
+      source: source || "",
+      usage_count: BigInt(0),
+      last_used: BigInt(now),
+      created_at: BigInt(now),
+      vector,
     },
-  };
+  ]);
 
-  collection.insertSync(doc);
-
-  return c.json({ success: true }, 201);
+  return c.json({ success: true, id }, 201);
 });
 
 router.get("/search", async (c) => {
@@ -36,29 +35,34 @@ router.get("/search", async (c) => {
   if (!query) return c.json({ error: "Query required" }, 400);
 
   const vector = await generateEmbedding(query);
-  const queryVector = new Float32Array(vector);
 
-  // Search with 85% threshold (0.85 similarity)
-  const results = collection.querySync({
-    fieldName: "embedding",
-    vector: queryVector,
-    topk: 1
-  });
+  const results = await memoriesTable
+    .vectorSearch(vector)
+    .limit(1)
+    .toArray();
 
   if (results.length > 0) {
     const memory = results[0];
-    if (memory && memory.score > 0.85) {
-      // Update usage
-      const updatedFields = { ...memory.fields };
-      updatedFields.usage_count = (Number(updatedFields.usage_count) || 0) + 1;
-      updatedFields.last_used = Date.now();
-
-      collection.updateSync({
-        id: memory.id,
-        fields: updatedFields
+    if (memory.score > 0.85) {
+      await memoriesTable.update({
+        where: `id = '${memory.id}'`,
+        values: {
+          usage_count: Number(memory.usage_count) + 1,
+          last_used: Date.now(),
+        },
       });
 
-      return c.json({ found: true, id: memory.id, ...memory.fields });
+      return c.json({
+        found: true,
+        id: memory.id,
+        question: memory.question,
+        answer: memory.answer,
+        category: memory.category,
+        source: memory.source,
+        usage_count: Number(memory.usage_count) + 1,
+        last_used: Date.now(),
+        created_at: Number(memory.created_at),
+      });
     }
   }
 
@@ -66,19 +70,24 @@ router.get("/search", async (c) => {
 });
 
 router.get("/all", async (c) => {
-  // Query with a zero vector to get some results if no easy 'all' exists
-  const results = collection.querySync({
-    fieldName: "embedding",
-    vector: new Float32Array(1536).fill(0),
-    topk: 100
-  });
-
-  return c.json(results.map(r => ({ id: r.id, ...r.fields })));
+  const results = await memoriesTable.query().limit(100).toArray();
+  return c.json(
+    results.map((r) => ({
+      id: r.id,
+      question: r.question,
+      answer: r.answer,
+      category: r.category,
+      source: r.source,
+      usage_count: Number(r.usage_count),
+      last_used: Number(r.last_used),
+      created_at: Number(r.created_at),
+    }))
+  );
 });
 
 router.delete("/:id", async (c) => {
   const id = c.req.param("id");
-  collection.deleteSync(id);
+  await memoriesTable.delete(`id = '${id}'`);
   return c.json({ success: true });
 });
 
@@ -86,47 +95,38 @@ router.patch("/:id", async (c) => {
   const id = c.req.param("id");
   const { question, answer, category, source } = await c.req.json();
 
-  // Get existing memory
-  const results = collection.querySync({
-    fieldName: "embedding",
-    vector: new Float32Array(1536).fill(0),
-    topk: 100
-  });
+  const existing = await memoriesTable.query().where(`id = '${id}'`).toArray();
 
-  const existing = results.find(r => r.id === id);
-  if (!existing) {
+  if (existing.length === 0) {
     return c.json({ error: "Memory not found" }, 404);
   }
 
-  // Update fields
-  const updatedFields = { ...existing.fields };
-  let newEmbedding: Float32Array | undefined;
+  const existingMemory = existing[0];
+  const updates: Record<string, any> = {};
 
-  // If question is updated, regenerate embedding
-  if (question && question !== existing.fields.question) {
-    const vector = await generateEmbedding(question);
-    newEmbedding = new Float32Array(vector);
-    updatedFields.question = question;
+  if (question && question !== existingMemory.question) {
+    const newVector = await generateEmbedding(question);
+    updates.vector = newVector;
+    updates.question = question;
   }
-
   if (answer !== undefined) {
-    updatedFields.answer = answer;
+    updates.answer = answer;
   }
   if (category !== undefined) {
-    updatedFields.category = category;
+    updates.category = category;
   }
   if (source !== undefined) {
-    updatedFields.source = source;
+    updates.source = source;
   }
 
-  // Update the document
-  collection.updateSync({
-    id,
-    vectors: newEmbedding ? { embedding: newEmbedding } : undefined,
-    fields: updatedFields
-  });
+  if (Object.keys(updates).length > 0) {
+    await memoriesTable.update({
+      where: `id = '${id}'`,
+      values: updates,
+    });
+  }
 
-  return c.json({ success: true, id, ...updatedFields });
+  return c.json({ success: true, id });
 });
 
 export default router;

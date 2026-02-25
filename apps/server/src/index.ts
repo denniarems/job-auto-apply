@@ -2,7 +2,7 @@ import { env } from "@job-auto-apply/env/server";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
-import { initDb, memoriesTable } from "./db/zvec";
+import { initDb, memoriesTable } from "./db/lancedb";
 import memories from "./routes/memories";
 import resumes from "./routes/resumes";
 import providers from "./routes/providers";

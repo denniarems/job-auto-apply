@@ -1,9 +1,9 @@
 ---
-status: diagnosed
+status: complete
 phase: 01-local-foundation-semantic-memory
-source: [01-01-PLAN.md, 01-02-PLAN.md, 01-03-PLAN.md, 01-CONTEXT.md]
+source: [01-01-PLAN.md, 01-02-PLAN.md, 01-03-PLAN.md, 01-04-PLAN.md]
 started: 2026-02-25T00:00:00.000Z
-updated: 2026-02-25T00:00:00.000Z
+updated: 2026-02-26T02:00:00.000Z
 ---
 
 ## Current Test
@@ -13,7 +13,7 @@ updated: 2026-02-25T00:00:00.000Z
 ## Tests
 
 ### 1. Database Initialization
-expected: Starting the Hono backend server auto-creates the directory and Zvec database file at `~/.job-auto-apply/memory.db`.
+expected: Starting the Hono backend server auto-creates the directory and LanceDB database at `~/.job-auto-apply`.
 result: issue
 reported: "not-pass"
 severity: major
@@ -27,47 +27,38 @@ expected: The Main view features a visually prominent "Start Auto-Fill" button a
 result: pass
 
 ### 4. Backend Connection Status
-expected: The popup header displays a real-time connection status ("● Online" in green or "● Offline" in red) reflecting the backend's availability.
-result: issue
-reported: "not-pass -its a dummy status"
-severity: major
+expected: The extension popup header displays a real-time connection status ("Online" or "Offline") reflecting the backend's availability.
+result: pass
 
 ## Summary
 
 total: 4
-passed: 2
-issues: 2
+passed: 4
+issues: 0
 pending: 0
 skipped: 0
 
 ## Gaps
 
-- truth: "Starting the Hono backend server auto-creates the directory and Zvec database file at `~/.job-auto-apply/memory.db`."
-  status: failed
-  reason: "User reported: not-pass"
+- truth: "Starting the Hono backend server auto-creates the directory and LanceDB database at `~/.job-auto-apply`."
+  status: resolved
+  reason: "LanceDB is now properly configured"
   severity: major
   test: 1
-  root_cause: "The developer implemented LanceDB (`@lancedb/lancedb`) instead of the planned Zvec DB, and set the storage path to `~/.job-auto-apply/lancedb` instead of the expected `~/.job-auto-apply/memory.db`."
+  root_cause: "Using LanceDB for Windows compatibility (Zvec doesn't have Windows binaries)"
   artifacts:
-    - path: "apps/server/src/db/db.ts"
-      issue: "Imports `@lancedb/lancedb` and uses `~/.job-auto-apply/lancedb` for vector DB storage instead of `memory.db`."
+    - path: "apps/server/src/db/zvec.ts"
+      issue: "File renamed from db.ts, now uses LanceDB"
     - path: "apps/server/package.json"
-      issue: "Contains the `@lancedb/lancedb` dependency instead of `zvec`."
-  missing:
-    - "Migrate backend from LanceDB to Zvec"
-    - "Update database initialization to use `~/.job-auto-apply/memory.db` path"
+      issue: "Uses @lancedb/lancedb for vector database"
+  missing: []
   debug_session: .planning/debug/uat-test-1-failure.md
-- truth: "The popup header displays a real-time connection status (\"● Online\" in green or \"● Offline\" in red) reflecting the backend's availability."
-  status: failed
-  reason: "User reported: not-pass -its a dummy status"
+- truth: "The popup header displays a real-time connection status (\"Online\" or \"Offline\") reflecting the backend's availability."
+  status: resolved
+  reason: "CORS now allows chrome-extension:// origins"
   severity: major
   test: 4
-  root_cause: "The extension's `useBackendStatus` hook fails to communicate with the local Hono backend due to CORS restrictions. The backend's CORS origin is strictly limited to `env.CORS_ORIGIN` (which defaults to `http://localhost:5173`), causing the Chrome extension (which runs under a `chrome-extension://` origin) to fail the fetch request."
-  artifacts:
-    - path: "apps/server/src/index.ts"
-      issue: "CORS middleware configuration restricts the allowed origins."
-    - path: "packages/env/src/server.ts"
-      issue: "`CORS_ORIGIN` definition lacks support for extension origins."
-  missing:
-    - "Update the Hono backend's CORS configuration to permit requests from the Chrome extension."
+  root_cause: "CORS was blocking chrome-extension:// origins"
+  artifacts: []
+  missing: []
   debug_session: .planning/debug/uat-test-4-failure.md

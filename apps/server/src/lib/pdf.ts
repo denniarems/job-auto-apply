@@ -49,7 +49,8 @@ export async function parsePdf(buffer: Buffer): Promise<PdfResult> {
     const data = await pdf(buffer);
 
     // Check for password protection
-    if (data?.info?.Creator?.toLowerCase().includes("password")) {
+    const creator = typeof data.info?.Creator === "string" ? data.info.Creator : "";
+    if (creator.toLowerCase().includes("password")) {
       return {
         success: false,
         error: {

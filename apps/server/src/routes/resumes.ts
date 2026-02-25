@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { parsePdf } from "../lib/pdf";
 import { extractResumeData, type AIProvider } from "../lib/extraction";
 import { generateFieldQuestions, toMemoryQuestions } from "../lib/questions";
-import { initDb, memoriesTable } from "../db/zvec";
+import { initDb, memoriesTable } from "../db/lancedb";
 import { generateEmbedding } from "../lib/ai";
 import { v4 as uuidv4 } from "uuid";
 

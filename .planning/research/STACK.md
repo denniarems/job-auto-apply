@@ -18,7 +18,7 @@
 | Technology | Version | Purpose | Why |
 |------------|---------|---------|-----|
 | **Vercel AI SDK** | latest | AI Routing | Simple abstraction for Claude, Gemini, and Qwen; supports streaming. |
-| **Zvec** | latest | Vector DB | In-process, SQLite-like vector database for local semantic memory. |
+| **LanceDB** | latest | Vector DB | Embedded, fast vector database for local semantic memory. Works on Windows without compilation. |
 | **Zod** | latest | Validation | Schema validation for form data and API responses. |
 
 ### Infrastructure (Local-Only)
@@ -37,7 +37,7 @@
 
 | Category | Recommended | Alternative | Why Not |
 |----------|-------------|-------------|---------|
-| **Vector DB** | **Zvec** | **ChromaDB** | Zvec is in-process (lighter), Chroma usually requires a separate docker container/service. |
+| **Vector DB** | **LanceDB** | **ChromaDB** | LanceDB is embedded (no docker needed), works cross-platform, better Windows support. |
 | **Backend** | **Hono** | **Express** | Hono is faster, smaller, and has better TypeScript support. |
 | **Ext. Framework** | **WXT** | **Plasmo** | WXT is often faster and has better support for Bun-based workflows. |
 
@@ -48,7 +48,7 @@
 bun install
 
 # In apps/server
-bun add hono @hono/node-server @zvec/zvec ai @ai-sdk/openai zod pdf-parse
+bun add hono @hono/node-server @lancedb/lancedb ai @ai-sdk/openai zod pdf-parse
 
 # In apps/extension
 bun add wxt react react-dom
@@ -58,5 +58,5 @@ bun add wxt react react-dom
 
 - [WXT Documentation](https://wxt.dev)
 - [Hono Documentation](https://hono.dev)
-- [Zvec GitHub](https://github.com/alibaba/zvec)
+- [LanceDB GitHub](https://github.com/lancedb/lancedb)
 - [Vercel AI SDK](https://sdk.vercel.ai)
