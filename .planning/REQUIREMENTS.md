@@ -10,7 +10,7 @@
 
 ### Memory Management (MEM)
 - [ ] **MEM-01**: Store and retrieve user answers using semantic similarity (Zvec vector DB) with an 85% confidence threshold.
-- [ ] **MEM-02**: Support manual editing and deletion of stored memories via a dedicated UI.
+- [x] **MEM-02**: Support manual editing and deletion of stored memories via a dedicated UI.
 - [ ] **MEM-03**: Track memory usage and last-used timestamps to prioritize relevant answers.
 - [ ] **MEM-04**: Securely store all memories locally on the user's machine (privacy-first).
 
@@ -31,7 +31,7 @@
 - [ ] **AI-03**: Securely manage API keys in a local backend `.env` file.
 
 ### UI & UX (UI)
-- [ ] **UI-01**: Provide a Chrome extension popup with a "Start Auto-Fill" button and provider selector.
+- [x] **UI-01**: Provide a Chrome extension popup with a "Start Auto-Fill" button and provider selector.
 - [ ] **UI-02**: Show real-time progress panels and status indicators during form analysis and filling.
 - [ ] **UI-03**: Display a user input dialog for fields with no high-confidence memory matches.
 
@@ -59,7 +59,7 @@
 | FORM-03 | Phase 3 | Pending |
 | FORM-04 | Phase 2 | Pending |
 | MEM-01 | Phase 1 | Pending |
-| MEM-02 | Phase 1 | Pending |
+| MEM-02 | Phase 1 | Complete |
 | MEM-03 | Phase 1 | Pending |
 | MEM-04 | Phase 1 | Pending |
 | RES-01 | Phase 2 | Pending |
@@ -72,7 +72,7 @@
 | AI-01 | Phase 2 | Pending |
 | AI-02 | Phase 2 | Pending |
 | AI-03 | Phase 1 | Pending |
-| UI-01 | Phase 1 | Pending |
+| UI-01 | Phase 1 | Complete |
 | UI-02 | Phase 3 | Pending |
 | UI-03 | Phase 3 | Pending |
 | COVER-01 | Phase 4 | Pending |
