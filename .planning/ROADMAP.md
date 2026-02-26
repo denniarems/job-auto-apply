@@ -13,7 +13,7 @@
 |-------|----------------|--------|-----------|
 | 1. Local Foundation & Semantic Memory | 4/4 | Complete | 2026-02-25 |
 | 2. Resume Ingestion & AI Intelligence | 1/1 | Complete | 2026-02-25 |
-| 3. Form Detection & Auto-Fill Interaction | 0/0 | Not started | - |
+| 3. Form Detection & Auto-Fill Interaction | 0/3 | In Progress | - |
 | 4. Enhancements & Application Tracking | 0/0 | Not started | - |
 
 ## Phase Details
@@ -50,8 +50,11 @@
   2. Extension fills forms using stored memories, showing color-coded borders indicating the data source.
   3. User is prompted with a dialog when a field cannot be matched with high confidence (>85% threshold).
   4. Hidden "honeypot" fields are explicitly skipped to avoid bot detection.
-  5. Multi-step forms maintain state as the user progresses through the application.
-**Plans**: TBD
+5. Multi-step forms maintain state as the user progresses through the application.
+**Plans**: 3 plans
+- [ ] 03-01-PLAN.md — Form detection API: Backend endpoints for AI classification, field extraction, memory mapping
+- [ ] 03-02-PLAN.md — Content script: DOM scanning, honeypot detection, event simulation, message routing
+- [ ] 03-03-PLAN.md — Preview UI: Field mapping preview, auto-fill execution, visual feedback
 
 ### Phase 4: Enhancements & Application Tracking
 **Goal**: Complete the core experience with tailored cover letters and tracking.
