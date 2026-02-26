@@ -7,6 +7,8 @@ const DB_DIR = path.join(os.homedir(), ".job-auto-apply");
 
 export let memoriesTable: lancedb.Table;
 export let templatesTable: lancedb.Table;
+export let applicationsTable: lancedb.Table;
+export let coverLettersTable: lancedb.Table;
 
 export async function initDb() {
   if (!fs.existsSync(DB_DIR)) {
@@ -46,6 +48,51 @@ export async function initDb() {
   } catch (e: any) {
     if (e.message?.includes("already exists")) {
       templatesTable = await db.openTable("form_templates");
+    } else {
+      throw e;
+    }
+  }
+
+  // Application tracking table
+  const appData = [
+    {
+      id: "__init__",
+      company: "__init__",
+      position: "__init__",
+      url: "__init__",
+      status: "__init__",
+      applied_date: 0n,
+      created_at: 0n,
+    },
+  ];
+
+  try {
+    applicationsTable = await db.createTable("applications", appData);
+  } catch (e: any) {
+    if (e.message?.includes("already exists")) {
+      applicationsTable = await db.openTable("applications");
+    } else {
+      throw e;
+    }
+  }
+
+  // Cover letters table
+  const coverLetterData = [
+    {
+      id: "__init__",
+      application_id: "__init__",
+      company: "__init__",
+      position: "__init__",
+      content: "__init__",
+      generated_at: 0n,
+    },
+  ];
+
+  try {
+    coverLettersTable = await db.createTable("cover_letters", coverLetterData);
+  } catch (e: any) {
+    if (e.message?.includes("already exists")) {
+      coverLettersTable = await db.openTable("cover_letters");
     } else {
       throw e;
     }
