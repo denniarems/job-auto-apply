@@ -13,11 +13,9 @@ export async function initDb() {
     fs.mkdirSync(DB_DIR, { recursive: true });
   }
 
-  const db = await lancedb.connect({
-  uri: "db://job-qyypwq",
-  apiKey: process.env.LANCEDB_API_KEY,
-  region: "us-east-1"
-});
+  // Use local LanceDB storage in ~/.job-auto-apply directory
+  const dbPath = path.join(DB_DIR, "db");
+  const db = await lancedb.connect(dbPath);
 
   const createTableData = [
     {
