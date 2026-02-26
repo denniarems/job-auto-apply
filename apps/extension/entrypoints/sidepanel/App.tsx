@@ -3,14 +3,18 @@ import { useBackendStatus } from "@/hooks/useBackendStatus";
 import { Memories } from "./Memories";
 import { ResumeUpload } from "./ResumeUpload";
 import { ResumeReview } from "./ResumeReview";
+import { Applications } from "./Applications";
+import { CoverLetters } from "./CoverLetters";
 import { 
   Rocket, 
   Brain,
   FileText, 
+  FileSignature,
   Settings as SettingsIcon,
   Circle,
   Check,
-  AlertCircle
+  AlertCircle,
+  Briefcase
 } from "lucide-react";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -199,6 +203,14 @@ export default function App() {
           <Memories />
         )}
 
+        {activeTab === "applications" && (
+          <Applications />
+        )}
+
+        {activeTab === "coverletters" && (
+          <CoverLetters backendUrl={backendUrl} selectedProvider={selectedProvider} />
+        )}
+
         {activeTab === "resumes" && (
           <div className="space-y-4">
             {!currentResume ? (
@@ -302,10 +314,22 @@ export default function App() {
           label="Memories"
         />
         <TabButton 
+          active={activeTab === "applications"} 
+          onClick={() => setActiveTab("applications")}
+          icon={<Briefcase className="w-5 h-5" />}
+          label="Apps"
+        />
+        <TabButton 
           active={activeTab === "resumes"} 
           onClick={() => setActiveTab("resumes")}
           icon={<FileText className="w-5 h-5" />}
           label="Resumes"
+        />
+        <TabButton 
+          active={activeTab === "coverletters"} 
+          onClick={() => setActiveTab("coverletters")}
+          icon={<FileSignature className="w-5 h-5" />}
+          label="Cover"
         />
         <TabButton 
           active={activeTab === "settings"} 
