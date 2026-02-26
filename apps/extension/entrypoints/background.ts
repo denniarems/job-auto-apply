@@ -16,7 +16,8 @@ type ContentToBackgroundMessage =
   | { type: 'API_MATCH'; fields: Array<{ category: string; semanticName: string; inputName: string }>; url?: string }
   | { type: 'DYNAMIC_FORM_DETECTED'; url: string }
   | { type: 'HONEYPOT_SKIPPED'; field: FormField; reason: string }
-  | { type: 'FILL_FIELD_RESULT'; fieldName: string; success: boolean; error?: string };
+  | { type: 'FILL_FIELD_RESULT'; fieldName: string; success: boolean; error?: string }
+  | { type: 'JOB_APPLICATION_DETECTED'; payload: { company: string; position: string; url: string; detectedAt: string } };
 
 // Response to content script
 type BackgroundResponse =
@@ -129,6 +130,15 @@ async function handleMessage(
         console.error('[Background] Fill error:', message.error);
       }
       return { success: true };
+
+    case 'JOB_APPLICATION_DETECTED':
+      console.log('[Background] Job application detected:', message.payload);
+      // Store pending application for side panel to retrieve
+      const pendingApps = await browser.storage.local.get('pendingApplications');
+      const apps: unknown[] = (pendingApps.pendingApplications as unknown[]) || [];
+      apps.push(message.payload);
+      await browser.storage.local.set({ pendingApplications: apps });
+      return { success: true, message: 'Application stored' };
 
     default:
       return { error: 'Unknown message type' };

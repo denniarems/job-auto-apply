@@ -343,6 +343,141 @@ function runContentScript(): void {
   // Set up MutationObserver for dynamic forms
   setupFormObserver();
 
+  // Initialize auto-capture for job applications
+  initAutoCapture();
+
   // Initial form detection (optional - could be triggered manually instead)
   console.log('[Content Script] Ready. Waiting for DETECT_FORMS message.');
+}
+
+/**
+ * Auto-capture: Detect job application form submissions
+ */
+
+// Job site URL patterns
+const JOB_SITE_PATTERNS = [
+  /linkedin\.com\/jobs/,
+  /indeed\.com/,
+  /glassdoor\.com/,
+  /monster\.com/,
+  /careers\./,
+  /jobvite\.com/,
+  /greenhouse\.io/,
+  /lever\.co/,
+  /workday\.com/,
+];
+
+// Field selectors for common job application fields
+const COMPANY_SELECTORS = [
+  'input[name*="company" i]',
+  'input[name*="employer" i]',
+  'input[id*="company" i]',
+  'input[aria-label*="company" i]',
+  '[data-field="company"]',
+];
+
+const POSITION_SELECTORS = [
+  'input[name*="title" i]',
+  'input[name*="position" i]',
+  'input[name*="job" i]',
+  'input[id*="title" i]',
+  'input[id*="position" i]',
+  'input[aria-label*="title" i]',
+  'input[aria-label*="position" i]',
+  '[data-field="title"]',
+  '[data-field="position"]',
+];
+
+function isJobSite(): boolean {
+  const url = window.location.href;
+  return JOB_SITE_PATTERNS.some((pattern) => pattern.test(url));
+}
+
+function extractFieldValue(selectors: string[]): string | null {
+  for (const selector of selectors) {
+    try {
+      const element = document.querySelector(selector) as HTMLInputElement | HTMLTextAreaElement;
+      if (element && element.value.trim()) {
+        return element.value.trim();
+      }
+    } catch {
+      // Invalid selector, skip
+    }
+  }
+  return null;
+}
+
+function extractJobData(): { company: string; position: string; url: string; detectedAt: string } | null {
+  const company = extractFieldValue(COMPANY_SELECTORS);
+  const position = extractFieldValue(POSITION_SELECTORS);
+
+  if (!company && !position) {
+    return null;
+  }
+
+  return {
+    company: company || "Unknown Company",
+    position: position || "Unknown Position",
+    url: window.location.href,
+    detectedAt: new Date().toISOString(),
+  };
+}
+
+function sendJobApplicationToBackground(data: { company: string; position: string; url: string; detectedAt: string }): void {
+  try {
+    browser.runtime.sendMessage({
+      type: 'JOB_APPLICATION_DETECTED',
+      payload: data,
+    });
+    console.log('[Auto-Capture] Job application data sent:', data);
+  } catch (error) {
+    console.error('[Auto-Capture] Failed to send message:', error);
+  }
+}
+
+function handleFormSubmit(event: Event): void {
+  const target = event.target;
+  if (!(target instanceof HTMLFormElement)) return;
+
+  const formData = extractJobData();
+  if (formData) {
+    // Delay slightly to ensure form data is fully submitted
+    setTimeout(() => {
+      sendJobApplicationToBackground(formData);
+    }, 500);
+  }
+}
+
+function initAutoCapture(): void {
+  if (!isJobSite()) {
+    return;
+  }
+
+  console.log('[Auto-Capture] Initializing on job site:', window.location.hostname);
+
+  // Listen for form submissions
+  document.addEventListener('submit', handleFormSubmit, true);
+
+  // Also check for submit buttons that might submit forms
+  document.addEventListener('click', (event) => {
+    const target = event.target;
+    if (!(target instanceof HTMLElement)) return;
+
+    const button = target.closest('button[type="submit"], input[type="submit"]');
+    if (button) {
+      // Try to extract job data when submit button is clicked
+      const form = (button as HTMLElement).closest('form');
+      if (form) {
+        const formData = extractJobData();
+        if (formData) {
+          // Delay to allow form submission
+          setTimeout(() => {
+            sendJobApplicationToBackground(formData);
+          }, 500);
+        }
+      }
+    }
+  });
+
+  console.log('[Auto-Capture] Auto-capture initialized');
 }
