@@ -6,6 +6,9 @@ import { initDb, memoriesTable } from "./db/lancedb";
 import memories from "./routes/memories";
 import resumes from "./routes/resumes";
 import providers from "./routes/providers";
+import forms from "./routes/forms";
+import fields from "./routes/fields";
+import mappings from "./routes/mappings";
 
 const app = new Hono();
 
@@ -49,6 +52,9 @@ app.get("/health", (c) => {
 app.route("/api/memories", memories);
 app.route("/api/resumes", resumes);
 app.route("/api/providers", providers);
+app.route("/api/forms", forms);
+app.route("/api/fields", fields);
+app.route("/api/mappings", mappings);
 
 export default {
   port: env.PORT,
