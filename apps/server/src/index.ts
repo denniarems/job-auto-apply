@@ -9,6 +9,7 @@ import providers from "./routes/providers";
 import forms from "./routes/forms";
 import fields from "./routes/fields";
 import mappings from "./routes/mappings";
+import applications from "./routes/applications";
 
 const app = new Hono();
 
@@ -55,6 +56,7 @@ app.route("/api/providers", providers);
 app.route("/api/forms", forms);
 app.route("/api/fields", fields);
 app.route("/api/mappings", mappings);
+app.route("/api/applications", applications);
 
 export default {
   port: env.PORT,
