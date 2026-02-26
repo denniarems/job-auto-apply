@@ -36,8 +36,8 @@
 - [x] **UI-03**: Display a user input dialog for fields with no high-confidence memory matches.
 
 ### Secondary Features (v1.1)
-- [ ] **COVER-01**: Generate tailored cover letters using Job Description and Resume context.
-- [ ] **TRACK-01**: Track basic application history (Company, Position, URL, Date).
+- [x] **COVER-01**: Generate tailored cover letters using Job Description and Resume context.
+- [x] **TRACK-01**: Track basic application history (Company, Position, URL, Date).
 
 ## v2 Requirements (Deferred)
 - [ ] **OPT-01**: Support DOCX resume uploads.
@@ -75,8 +75,8 @@
 | UI-01 | Phase 1 | Complete |
 | UI-02 | Phase 3 | Complete |
 | UI-03 | Phase 3 | Complete |
-| COVER-01 | Phase 4 | Pending |
-| TRACK-01 | Phase 4 | Pending |
+| COVER-01 | Phase 4 | Complete |
+| TRACK-01 | Phase 4 | Complete |
 
 ---
 *Last updated: 2026-02-25 after initialization*
