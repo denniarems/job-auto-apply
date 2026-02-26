@@ -14,7 +14,7 @@
 | 1. Local Foundation & Semantic Memory | 4/4 | Complete | 2026-02-25 |
 | 2. Resume Ingestion & AI Intelligence | 1/1 | Complete | 2026-02-25 |
 | 3. Form Detection & Auto-Fill Interaction | 2/3 | In Progress | 2026-02-26 |
-| 4. Enhancements & Application Tracking | 0/0 | Not started | - |
+| 4. Enhancements & Application Tracking | 0/2 | Not started | - |
 
 ## Phase Details
 
@@ -63,4 +63,6 @@
 **Success Criteria**:
   1. User can generate a tailored cover letter PDF based on their resume context and the current job description.
   2. User can view a basic history of applications they have interacted with using the extension (Company, Date, URL).
-**Plans**: TBD
+**Plans**: 2 plans
+- [ ] 04-01-PLAN.md — Database & Backend APIs (LanceDB tables, Application CRUD, Cover Letter generation, PDF download)
+- [ ] 04-02-PLAN.md — Frontend UI (Application tracking view, Cover letter workflow, Tab navigation)
