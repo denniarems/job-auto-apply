@@ -80,7 +80,7 @@ interface UploadedResume {
 
 export default function App() {
   const [activeTab, setActiveTab] = useState("main");
-  const [backendUrl, setBackendUrl] = useState(DEFAULT_BACKEND_URL);
+  const backendUrl = DEFAULT_BACKEND_URL;
   const [selectedProvider, setSelectedProvider] = useState("anthropic");
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [uploadSuccess, setUploadSuccess] = useState(false);
@@ -94,8 +94,7 @@ export default function App() {
       try {
         const win = window as unknown as { chrome?: { storage?: { local?: { get: (keys: string[]) => Promise<Record<string, string>> } } } };
         if (win.chrome?.storage?.local) {
-          const result = await win.chrome.storage.local.get(["backendUrl", "selectedProvider"]);
-          if (result.backendUrl) setBackendUrl(result.backendUrl);
+          const result = await win.chrome.storage.local.get(["selectedProvider"]);
           if (result.selectedProvider) setSelectedProvider(result.selectedProvider);
         }
       } catch (e) {
@@ -258,13 +257,7 @@ export default function App() {
             <div className="p-4 bg-slate-50 rounded-xl space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">Backend URL</span>
-                <input
-                  type="text"
-                  value={backendUrl}
-                  onChange={(e) => setBackendUrl(e.target.value)}
-                  className="text-sm text-slate-500 border rounded px-2 py-1"
-                  placeholder="http://localhost:3000"
-                />
+                <span className="text-sm text-slate-500 font-mono">{backendUrl}</span>
               </div>
               
               {/* Provider Selection */}
@@ -286,7 +279,7 @@ export default function App() {
               
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">Local Backend Port</span>
-                <span className="text-sm text-slate-500">3000</span>
+                <span className="text-sm text-slate-500">{new URL(BACKEND_URL).port || "80"}</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">Confidence Threshold</span>
