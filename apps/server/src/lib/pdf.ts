@@ -28,6 +28,14 @@ export type PdfResult =
   | { success: true; data: PdfParseResult }
   | { success: false; error: ParsedPdfError };
 
+const PASSWORD_PROTECTED: PdfResult = {
+  success: false,
+  error: {
+    code: "PASSWORD_PROTECTED",
+    message: "PDF is password protected",
+  },
+};
+
 /**
  * Parse a PDF buffer and extract text content.
  * @param buffer - The PDF file buffer
@@ -45,57 +53,44 @@ export async function parsePdf(buffer: Buffer): Promise<PdfResult> {
     };
   }
 
+  let data: Awaited<ReturnType<typeof pdf>>;
+
   try {
-    const data = await pdf(buffer);
-
-    // Check for password protection
-    const creator = typeof data.info?.Creator === "string" ? data.info.Creator : "";
-    if (creator.toLowerCase().includes("password")) {
-      return {
-        success: false,
-        error: {
-          code: "PASSWORD_PROTECTED",
-          message: "PDF is password protected",
-        },
-      };
+    data = await pdf(buffer);
+  } catch (e: unknown) {
+    const message = e instanceof Error ? e.message : String(e);
+    if (
+      message.toLowerCase().includes("password") ||
+      message.toLowerCase().includes("encrypted")
+    ) {
+      return PASSWORD_PROTECTED;
     }
-
-    // Validate and parse result
-    const result = pdfParseSchema.safeParse({
-      text: data.text,
-      numpages: data.numpages,
-      info: data.info,
-    });
-
-    if (!result.success) {
-      return {
-        success: false,
-        error: {
-          code: "PARSE_ERROR",
-          message: "Failed to parse PDF structure",
-        },
-      };
-    }
-
-    return { success: true, data: result.data };
-  } catch (error) {
-    // Check if it's a password-protected PDF
-    if (error instanceof Error && error.message.includes("password")) {
-      return {
-        success: false,
-        error: {
-          code: "PASSWORD_PROTECTED",
-          message: "PDF is password protected",
-        },
-      };
-    }
-
     return {
       success: false,
       error: {
         code: "CORRUPTED",
-        message: error instanceof Error ? error.message : "Unknown error parsing PDF",
+        message,
       },
     };
   }
+
+  // Validate and parse result
+  const result = pdfParseSchema.safeParse({
+    text: data.text,
+    numpages: data.numpages,
+    info: data.info,
+  });
+
+  if (!result.success) {
+    console.error("[pdf] Zod validation failed:", result.error.issues);
+    return {
+      success: false,
+      error: {
+        code: "PARSE_ERROR",
+        message: "Failed to parse PDF structure",
+      },
+    };
+  }
+
+  return { success: true, data: result.data };
 }

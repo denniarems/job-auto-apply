@@ -1,9 +1,7 @@
 import { generateObject } from "ai";
 import { z } from "zod";
-import { anthropic } from "@ai-sdk/anthropic";
-import { createOpenAI } from "@ai-sdk/openai";
-import { google } from "@ai-sdk/google";
 import { env } from "@job-auto-apply/env/server";
+import { type AIProvider, getModel } from "./ai-providers";
 
 // Resume data extraction schema
 export const resumeDataSchema = z.object({
@@ -83,23 +81,8 @@ export interface ExtractionResult {
   rawText: string;
 }
 
-// Provider type
-export type AIProvider = "anthropic" | "google" | "openai";
-
-// Create OpenAI client with optional API key
-const openai = createOpenAI({ apiKey: env.OPENAI_API_KEY });
-
-// Map provider to model
-function getModel(provider: AIProvider) {
-  switch (provider) {
-    case "anthropic":
-      return anthropic("claude-3-5-sonnet-20241022");
-    case "google":
-      return google("gemini-2.0-flash-exp");
-    case "openai":
-      return openai("gpt-4o");
-  }
-}
+// Re-export AIProvider for consumers that previously imported it from here
+export type { AIProvider };
 
 // Extract resume data from raw text using AI
 export async function extractResumeData(
@@ -132,14 +115,14 @@ function calculateConfidences(data: ResumeData): FieldConfidence[] {
 
   // Helper to add confidence for a field
   const addConfidence = (field: string, value: unknown) => {
-    const confidence: ConfidenceLevel =
-      value && typeof value === "object"
-        ? Object.keys(value as object).length > 0
-          ? "high"
-          : "low"
-        : value
-          ? "high"
-          : "low";
+    let confidence: ConfidenceLevel;
+    if (Array.isArray(value)) {
+      confidence = value.length > 0 ? "high" : "low";
+    } else if (value && typeof value === "object") {
+      confidence = Object.keys(value as object).length > 0 ? "high" : "low";
+    } else {
+      confidence = value ? "high" : "low";
+    }
     fields.push({
       field,
       confidence,
@@ -172,6 +155,12 @@ export function getProviderDisplayName(provider: AIProvider): string {
       return "Gemini";
     case "openai":
       return "OpenAI";
+    case "qwen":
+      return "Qwen";
+    default: {
+      const _exhaustive: never = provider;
+      throw new Error(`Unknown AI provider: ${_exhaustive}`);
+    }
   }
 }
 
@@ -184,5 +173,11 @@ export function isProviderConfigured(provider: AIProvider): boolean {
       return !!env.GOOGLE_GENERATIVE_AI_API_KEY;
     case "openai":
       return !!env.OPENAI_API_KEY;
+    case "qwen":
+      return !!env.QWEN_API_KEY;
+    default: {
+      const _exhaustive: never = provider;
+      throw new Error(`Unknown AI provider: ${_exhaustive}`);
+    }
   }
 }

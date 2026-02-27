@@ -61,6 +61,14 @@ interface UseAutoFillReturn {
   clearProgress: () => void;
 }
 
+// Safe default used when spreading into setProgress callbacks where prev may be null
+const EMPTY_PROGRESS: FillProgress = {
+  total: 0,
+  completed: 0,
+  currentField: '',
+  status: 'idle',
+};
+
 // Message types for content script communication
 type FillMessage =
   | { type: 'FILL_FIELDS'; mappings: Array<{ fieldName: string; fieldId: string; value: string }> }
@@ -76,12 +84,18 @@ export function useAutoFill(): UseAutoFillReturn {
   const [progress, setProgress] = useState<FillProgress | null>(null);
   const resultsRef = useRef<FillResult[]>([]);
 
+  // Ref to track filling state without stale closure issues in setInterval
+  const isFillingRef = useRef(isFilling);
+  useEffect(() => {
+    isFillingRef.current = isFilling;
+  }, [isFilling]);
+
   // Listen for fill progress messages from content script
   useEffect(() => {
     const handleMessage = (message: FillResponse) => {
       if (message.type === 'FILL_PROGRESS') {
         setProgress((prev) => ({
-          ...prev!,
+          ...(prev ?? EMPTY_PROGRESS),
           completed: message.completed,
           total: message.total,
           currentField: message.currentField,
@@ -89,11 +103,10 @@ export function useAutoFill(): UseAutoFillReturn {
         }));
       } else if (message.type === 'FILL_FIELDS_RESULT') {
         resultsRef.current = message.results;
-        const successCount = message.results.filter((r) => r.success).length;
         const failCount = message.results.filter((r) => !r.success && !r.skipped).length;
         
         setProgress((prev) => ({
-          ...prev!,
+          ...(prev ?? EMPTY_PROGRESS),
           completed: message.results.length,
           status: failCount > 0 ? 'failed' : 'success',
           results: message.results,
@@ -102,7 +115,7 @@ export function useAutoFill(): UseAutoFillReturn {
       } else if (message.type === 'ERROR') {
         console.error('[useAutoFill] Fill error:', message.error);
         setProgress((prev) => ({
-          ...prev!,
+          ...(prev ?? EMPTY_PROGRESS),
           status: 'failed',
         }));
         setIsFilling(false);
@@ -132,7 +145,7 @@ export function useAutoFill(): UseAutoFillReturn {
 
   // Start the fill process
   const startFill = useCallback(async (mappings: FieldMapping[]): Promise<FillResult[]> => {
-    if (isFilling) {
+    if (isFillingRef.current) {
       throw new Error('Fill already in progress');
     }
 
@@ -167,9 +180,10 @@ export function useAutoFill(): UseAutoFillReturn {
       });
 
       // Return results (will be updated via message listener)
+      // Use isFillingRef instead of isFilling to avoid stale closure
       return new Promise((resolve) => {
         const checkResults = setInterval(() => {
-          if (!isFilling || resultsRef.current.length > 0) {
+          if (!isFillingRef.current || resultsRef.current.length > 0) {
             clearInterval(checkResults);
             resolve(resultsRef.current);
           }
@@ -184,20 +198,20 @@ export function useAutoFill(): UseAutoFillReturn {
     } catch (err) {
       setIsFilling(false);
       setProgress((prev) => ({
-        ...prev!,
+        ...(prev ?? EMPTY_PROGRESS),
         status: 'failed',
       }));
       throw err;
     }
-  }, [isFilling, sendToContent]);
+  }, [sendToContent]);
 
   // Cancel the fill process
   const cancelFill = useCallback(() => {
-    if (!isFilling) return;
+    if (!isFillingRef.current) return;
 
     sendToContent({ type: 'CANCEL_FILL' }).then(() => {
       setProgress((prev) => ({
-        ...prev!,
+        ...(prev ?? EMPTY_PROGRESS),
         status: 'cancelled',
       }));
       setIsFilling(false);
@@ -205,12 +219,12 @@ export function useAutoFill(): UseAutoFillReturn {
       console.error('[useAutoFill] Cancel error:', err);
       // Still update state even if message fails
       setProgress((prev) => ({
-        ...prev!,
+        ...(prev ?? EMPTY_PROGRESS),
         status: 'cancelled',
       }));
       setIsFilling(false);
     });
-  }, [isFilling, sendToContent]);
+  }, [sendToContent]);
 
   // Clear progress state
   const clearProgress = useCallback(() => {

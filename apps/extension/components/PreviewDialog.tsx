@@ -1,12 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { X, Check, AlertCircle, Loader2 } from 'lucide-react';
-import { clsx, type ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
+import { cn } from '../lib/cn';
 import { FieldCard, type FieldCardProps } from './FieldCard';
-
-function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
 
 // Types
 interface FormField {
@@ -80,7 +75,7 @@ export function PreviewDialog({
   isFilling,
   fillProgress,
 }: PreviewDialogProps) {
-  const [expandedField, setExpandedField] = useState<number | null>(null);
+  // TODO: UnmappedInput dialog rendering is pending implementation; state kept since onAddNew handler sets it
   const [unmappedInputOpen, setUnmappedInputOpen] = useState<number | null>(null);
 
   const mappedCount = mappings.filter(m => m.status === 'mapped').length;

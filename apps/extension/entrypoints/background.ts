@@ -10,8 +10,12 @@ const API_ENDPOINTS = {
   match: `${API_BASE_URL}/api/mappings/match`,
 };
 
-// Message types from content script
-type ContentToBackgroundMessage =
+// Message sent by content script to update the badge (content scripts cannot
+// call browser.action directly).
+type UpdateBadgeMessage = { action: 'UPDATE_BADGE'; count: number; text: string; color: string };
+
+// All other messages from the content script (discriminated on `type`)
+type TypedContentMessage =
   | { type: 'API_DETECT'; forms: FormData[]; url: string; atsType?: string }
   | { type: 'API_EXTRACT'; fields: FormField[]; context?: string }
   | { type: 'API_MATCH'; fields: Array<{ category: string; semanticName: string; inputName: string }>; url?: string }
@@ -19,6 +23,8 @@ type ContentToBackgroundMessage =
   | { type: 'HONEYPOT_SKIPPED'; field: FormField; reason: string }
   | { type: 'FILL_FIELD_RESULT'; fieldName: string; success: boolean; error?: string }
   | { type: 'JOB_APPLICATION_DETECTED'; payload: { company: string; position: string; url: string; detectedAt: string } };
+
+type ContentToBackgroundMessage = TypedContentMessage | UpdateBadgeMessage;
 
 // Response to content script
 type BackgroundResponse =
@@ -74,16 +80,26 @@ async function handleMessage(
   message: ContentToBackgroundMessage, 
   _sender: browser.runtime.MessageSender
 ): Promise<BackgroundResponse> {
-  console.log('[Background] Received message:', message.type);
+  // Handle UPDATE_BADGE messages sent by content scripts (which cannot call
+  // browser.action directly).
+  if ('action' in message && message.action === 'UPDATE_BADGE') {
+    browser.action.setBadgeText({ text: message.count > 0 ? String(message.count) : message.text });
+    browser.action.setBadgeBackgroundColor({ color: message.color });
+    return { success: true };
+  }
 
-  switch (message.type) {
+  // From this point on the message is a TypedContentMessage (discriminated on `type`).
+  const typedMessage = message as TypedContentMessage;
+  console.log('[Background] Received message:', typedMessage.type);
+
+  switch (typedMessage.type) {
     case 'API_DETECT':
       try {
         updateBadge('loading');
         const results = await sendApiRequest<DetectionResult[]>(API_ENDPOINTS.detect, {
-          forms: message.forms,
-          url: message.url,
-          atsType: message.atsType,
+          forms: typedMessage.forms,
+          url: typedMessage.url,
+          atsType: typedMessage.atsType,
         });
         
         const hasJobForm = results.some(r => r.isJobApplication);
@@ -99,7 +115,7 @@ async function handleMessage(
       try {
         const results = await sendApiRequest<{ fields: Array<{ category: string; name: string }> }>(
           API_ENDPOINTS.extract,
-          { fields: message.fields, context: message.context }
+          { fields: typedMessage.fields, context: typedMessage.context }
         );
         return results.fields as unknown as DetectionResult[];
       } catch (error) {
@@ -110,7 +126,7 @@ async function handleMessage(
       try {
         const results = await sendApiRequest<{ mappings: FieldMapping[] }>(
           API_ENDPOINTS.match,
-          { fields: message.fields, url: message.url }
+          { fields: typedMessage.fields, url: typedMessage.url }
         );
         return results.mappings as unknown as DetectionResult[];
       } catch (error) {
@@ -118,26 +134,26 @@ async function handleMessage(
       }
 
     case 'DYNAMIC_FORM_DETECTED':
-      console.log('[Background] New form detected on:', message.url);
+      console.log('[Background] New form detected on:', typedMessage.url);
       return { success: true, message: 'Form detected notification logged' };
 
     case 'HONEYPOT_SKIPPED':
-      console.log('[Background] Honeypot skipped:', message.field.name, 'Reason:', message.reason);
+      console.log('[Background] Honeypot skipped:', typedMessage.field.name, 'Reason:', typedMessage.reason);
       return { success: true };
 
     case 'FILL_FIELD_RESULT':
-      console.log('[Background] Fill result:', message.fieldName, 'Success:', message.success);
-      if (!message.success && message.error) {
-        console.error('[Background] Fill error:', message.error);
+      console.log('[Background] Fill result:', typedMessage.fieldName, 'Success:', typedMessage.success);
+      if (!typedMessage.success && typedMessage.error) {
+        console.error('[Background] Fill error:', typedMessage.error);
       }
       return { success: true };
 
     case 'JOB_APPLICATION_DETECTED':
-      console.log('[Background] Job application detected:', message.payload);
+      console.log('[Background] Job application detected:', typedMessage.payload);
       // Store pending application for side panel to retrieve
       const pendingApps = await browser.storage.local.get('pendingApplications');
       const apps: unknown[] = (pendingApps.pendingApplications as unknown[]) || [];
-      apps.push(message.payload);
+      apps.push(typedMessage.payload);
       await browser.storage.local.set({ pendingApplications: apps });
       return { success: true, message: 'Application stored' };
 
@@ -158,8 +174,8 @@ export default defineBackground({
           // Send response back to content script
           const senderId = sender.tab?.id;
           if (senderId) {
-            browser.tabs.sendMessage(senderId, response).catch(() => {
-              // Tab might have been closed
+            browser.tabs.sendMessage(senderId, response).catch((e: unknown) => {
+              console.warn('[background] Failed to send message to tab:', e);
             });
           }
         })

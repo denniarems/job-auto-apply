@@ -7,7 +7,6 @@ import {
   AlertTriangle,
   CheckCircle,
   Brain,
-  Trash2,
 } from "lucide-react";
 
 interface Question {
@@ -164,7 +163,6 @@ export function ResumeReview({
       onSave(editedData);
     } catch (error) {
       console.error("Save error:", error);
-      throw error;
     } finally {
       setIsSaving(false);
     }

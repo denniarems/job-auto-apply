@@ -1,4 +1,4 @@
-import { extractForms, extractFormsDeep } from './utils/dom';
+import { extractFormsDeep } from './utils/dom';
 import type { FormData, FormField } from './utils/dom';
 import { fillWithFeedback } from './utils/events';
 import { isHoneypotField, detectATSType } from './utils/ats-patterns';
@@ -125,10 +125,6 @@ async function executeFill(mappings: FieldMapping[]): Promise<FillResult[]> {
   const results: FillResult[] = [];
 
   try {
-    // Get all fields from the page
-    const forms = extractFormsDeep();
-    const allFields = forms.flatMap((f: FormData) => f.fields);
-
     for (const mapping of mappings) {
       // Find the field element
       let element: HTMLElement | null = null;
@@ -245,9 +241,10 @@ function sendToBackground(message: unknown): Promise<unknown> {
 type BadgeStatus = 'formFound' | 'noForms' | 'error' | 'filling';
 
 /**
- * Update extension badge
+ * Update extension badge — delegates to background script since
+ * content scripts do not have access to browser.action.
  */
-function updateBadge(status: BadgeStatus): void {
+async function updateBadge(status: BadgeStatus): Promise<void> {
   const config: Record<BadgeStatus, { text: string; color: string }> = {
     formFound: { text: '✓', color: '#22c55e' },
     noForms: { text: '0', color: '#6b7280' },
@@ -256,9 +253,16 @@ function updateBadge(status: BadgeStatus): void {
   };
 
   const { text, color } = config[status];
-  
-  browser.action.setBadgeText({ text });
-  browser.action.setBadgeBackgroundColor({ color });
+  const count = text === '✓' ? 1 : text === '0' ? 0 : -1;
+
+  await browser.runtime.sendMessage({
+    action: 'UPDATE_BADGE',
+    count,
+    text,
+    color,
+  }).catch(() => {
+    // Background script may not be ready
+  });
 }
 
 /**
@@ -455,29 +459,9 @@ function initAutoCapture(): void {
 
   console.log('[Auto-Capture] Initializing on job site:', window.location.hostname);
 
-  // Listen for form submissions
+  // Listen for form submissions only — a click listener on submit buttons
+  // would cause duplicate entries since the form's submit event fires too.
   document.addEventListener('submit', handleFormSubmit, true);
-
-  // Also check for submit buttons that might submit forms
-  document.addEventListener('click', (event) => {
-    const target = event.target;
-    if (!(target instanceof HTMLElement)) return;
-
-    const button = target.closest('button[type="submit"], input[type="submit"]');
-    if (button) {
-      // Try to extract job data when submit button is clicked
-      const form = (button as HTMLElement).closest('form');
-      if (form) {
-        const formData = extractJobData();
-        if (formData) {
-          // Delay to allow form submission
-          setTimeout(() => {
-            sendJobApplicationToBackground(formData);
-          }, 500);
-        }
-      }
-    }
-  });
 
   console.log('[Auto-Capture] Auto-capture initialized');
 }

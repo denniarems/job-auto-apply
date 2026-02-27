@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useCoverLetter, type CoverLetterHistoryItem, type ResumeData } from "@/hooks/useCoverLetter";
 import { CoverLetterPreview } from "@/components/CoverLetterPreview";
 import { CoverLetterEditor } from "@/components/CoverLetterEditor";
@@ -24,16 +24,13 @@ export function CoverLetters({ backendUrl, selectedProvider }: CoverLettersProps
   const [selectedHistoryItem, setSelectedHistoryItem] = useState<CoverLetterHistoryItem | null>(null);
   const [resumeData, setResumeData] = useState<ResumeData | null>(null);
 
-  // Load resume data from chrome.storage
+  // Load resume data from browser.storage.local
   useEffect(() => {
     const loadResumeData = async () => {
       try {
-        const win = window as unknown as { chrome?: { storage?: { local?: { get: (keys: string[]) => Promise<Record<string, unknown>> } } } };
-        if (win.chrome?.storage?.local) {
-          const result = await win.chrome.storage.local.get(["resumeData"]);
-          if (result.resumeData) {
-            setResumeData(result.resumeData as ResumeData);
-          }
+        const result = await browser.storage.local.get(["resumeData"]);
+        if (result.resumeData) {
+          setResumeData(result.resumeData as ResumeData);
         }
       } catch (e) {
         console.log("Could not load resume data:", e);
@@ -42,15 +39,15 @@ export function CoverLetters({ backendUrl, selectedProvider }: CoverLettersProps
     loadResumeData();
   }, []);
 
+  const loadHistory = useCallback(async () => {
+    const items = await getHistory();
+    setHistory(items);
+  }, [getHistory]);
+
   // Load history on mount
   useEffect(() => {
     loadHistory();
-  }, []);
-
-  const loadHistory = async () => {
-    const items = await getHistory();
-    setHistory(items);
-  };
+  }, [loadHistory]);
 
   const handleGenerate = async () => {
     if (!jobDescription.trim() || !companyName.trim() || !position.trim()) {
@@ -123,8 +120,8 @@ export function CoverLetters({ backendUrl, selectedProvider }: CoverLettersProps
     setCurrentView("edit");
   };
 
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
+  const formatDate = (timestamp: number) => {
+    const date = new Date(timestamp);
     return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
   };
 
@@ -282,7 +279,7 @@ export function CoverLetters({ backendUrl, selectedProvider }: CoverLettersProps
                       </div>
                       <div className="flex items-center gap-1 text-xs text-slate-400">
                         <Clock className="w-3 h-3" />
-                        {formatDate(item.createdAt)}
+                        {formatDate(item.generated_at)}
                       </div>
                     </div>
                     <div className="flex gap-2">

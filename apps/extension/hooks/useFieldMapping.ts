@@ -5,60 +5,18 @@
 
 import { useState, useCallback } from 'react';
 import { BACKEND_URL } from '@/lib/env';
+import type {
+  FormField,
+  FormData,
+  DetectedField,
+  DetectionResult,
+  MemoryMatch as CanonicalMemoryMatch,
+  FieldMapping,
+} from '../entrypoints/types/forms';
 
-// Types
-interface FormField {
-  type: string;
-  name: string;
-  id: string;
-  label: string;
-  placeholder: string;
-  required: boolean;
-  autocomplete: string;
-  cssHidden: boolean;
-  maxLength?: number;
-  pattern?: string;
-}
-
-interface FormData {
-  action: string;
-  method: string;
-  fields: FormField[];
-  url: string;
-  atsType?: 'greenhouse' | 'lever' | 'workday' | 'other';
-}
-
-interface DetectedField {
-  category: 'personal' | 'contact' | 'experience' | 'education' | 'salary' | 'skills' | 'other';
-  semanticName: string;
-  inputName: string;
-  memoryQuestion: string;
-  keywords: string[];
-}
-
-interface DetectionResult {
-  isJobApplication: boolean;
-  confidence: number;
-  atsType: 'greenhouse' | 'lever' | 'workday' | 'other' | null;
-  detectedFields: DetectedField[];
-}
-
-interface MemoryMatch {
-  memoryId: string;
-  question: string;
-  answer: string;
-  confidence: number;
-  source: 'memory' | 'resume' | 'manual';
+// Extends canonical MemoryMatch with the fieldIndex used during matching
+interface MemoryMatch extends CanonicalMemoryMatch {
   fieldIndex?: number; // Index in the detectedFields array
-}
-
-interface FieldMapping {
-  field: FormField;
-  detected: DetectedField;
-  matches: MemoryMatch[];
-  selectedMatch?: MemoryMatch;
-  status: 'pending' | 'mapped' | 'unmapped' | 'failed';
-  source?: 'memory' | 'resume' | 'manual' | 'skip';
 }
 
 interface UseFieldMappingReturn {
@@ -134,7 +92,8 @@ export function useFieldMapping(backendUrl: string = DEFAULT_BACKEND_URL): UseFi
       }
 
       const result = await response.json();
-      return result.detectedFields || [];
+      // Server returns { fields: [...] }
+      return result.fields || [];
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error';
       setError(message);
@@ -155,7 +114,8 @@ export function useFieldMapping(backendUrl: string = DEFAULT_BACKEND_URL): UseFi
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          detectedFields,
+          // Server expects { fields, url }
+          fields: detectedFields,
           url: url || window.location.href,
         }),
       });

@@ -1,11 +1,6 @@
 import { Check, X, Loader2, ChevronDown, ChevronUp, AlertCircle } from 'lucide-react';
-import { clsx, type ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
 import { useState } from 'react';
-
-function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
+import { cn } from '../lib/cn';
 
 // Types
 interface FormField {
@@ -19,14 +14,6 @@ interface FormField {
   cssHidden: boolean;
   maxLength?: number;
   pattern?: string;
-}
-
-interface DetectedField {
-  category: 'personal' | 'contact' | 'experience' | 'education' | 'salary' | 'skills' | 'other';
-  semanticName: string;
-  inputName: string;
-  memoryQuestion: string;
-  keywords: string[];
 }
 
 interface FillResult {
@@ -46,6 +33,14 @@ interface FillProgressProps {
   onCancel?: () => void;
 }
 
+const statusConfig = {
+  idle: { color: 'bg-slate-200', text: 'text-slate-600', label: 'Ready' },
+  filling: { color: 'bg-blue-500', text: 'text-blue-600', label: 'Filling in progress...' },
+  success: { color: 'bg-green-500', text: 'text-green-600', label: 'Complete!' },
+  failed: { color: 'bg-red-500', text: 'text-red-600', label: 'Completed with errors' },
+  cancelled: { color: 'bg-yellow-500', text: 'text-yellow-600', label: 'Cancelled' },
+};
+
 export function FillProgress({
   total,
   completed,
@@ -60,14 +55,6 @@ export function FillProgress({
   const successCount = results?.filter(r => r.success).length || 0;
   const failCount = results?.filter(r => !r.success && !r.skipped).length || 0;
   const skippedCount = results?.filter(r => r.skipped).length || 0;
-
-  const statusConfig = {
-    idle: { color: 'bg-slate-200', text: 'text-slate-600', label: 'Ready' },
-    filling: { color: 'bg-blue-500', text: 'text-blue-600', label: 'Filling in progress...' },
-    success: { color: 'bg-green-500', text: 'text-green-600', label: 'Complete!' },
-    failed: { color: 'bg-red-500', text: 'text-red-600', label: 'Completed with errors' },
-    cancelled: { color: 'bg-yellow-500', text: 'text-yellow-600', label: 'Cancelled' },
-  };
 
   const config = statusConfig[status];
 

@@ -100,6 +100,10 @@ export async function fillSelect(select: HTMLSelectElement, value: string): Prom
   select.dispatchEvent(blurEvent);
 }
 
+// Track the pending auto-restore timeout so we can cancel it if a terminal
+// state (success / failed) arrives before the 3-second delay fires.
+let indicatorTimeout: ReturnType<typeof setTimeout> | null = null;
+
 /**
  * Set visual indicator on a field during/after fill
  */
@@ -122,12 +126,21 @@ export function setVisualIndicator(
   element.style.outline = style.outline;
   element.style.borderColor = style.borderColor;
 
-  // Auto-remove 'filling' indicator after a delay
   if (status === 'filling') {
-    setTimeout(() => {
+    // Cancel any previous pending restore before scheduling a new one.
+    if (indicatorTimeout) clearTimeout(indicatorTimeout);
+    indicatorTimeout = setTimeout(() => {
       element.style.outline = originalOutline;
       element.style.borderColor = originalBorderColor;
+      indicatorTimeout = null;
     }, 3000);
+  } else {
+    // 'success' or 'failed' — cancel the pending restore so it does not
+    // overwrite the terminal state after its delay elapses.
+    if (indicatorTimeout) {
+      clearTimeout(indicatorTimeout);
+      indicatorTimeout = null;
+    }
   }
 }
 
