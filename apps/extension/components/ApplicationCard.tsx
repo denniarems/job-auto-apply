@@ -1,11 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Trash2, ChevronDown } from "lucide-react";
-import { clsx, type ClassValue } from "clsx";
-import { twMerge } from "tailwind-merge";
-
-function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
+import { cn } from "../lib/cn";
 
 export type ApplicationStatus = "Applied" | "Interviewing" | "Offer" | "Rejected" | "Withdrawn";
 
@@ -36,6 +31,13 @@ const statusOptions: ApplicationStatus[] = ["Applied", "Interviewing", "Offer", 
 
 export function ApplicationCard({ application, onStatusChange, onDelete }: ApplicationCardProps) {
   const [showDropdown, setShowDropdown] = useState(false);
+
+  useEffect(() => {
+    if (!showDropdown) return;
+    const handleClickOutside = () => setShowDropdown(false);
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, [showDropdown]);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);

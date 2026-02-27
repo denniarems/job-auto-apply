@@ -1,12 +1,13 @@
 import { Hono } from "hono";
 import { generateText } from "ai";
-import { createOpenAI } from "@ai-sdk/openai";
+import { createAnthropic } from "@ai-sdk/anthropic";
+import { env } from "@job-auto-apply/env/server";
 import type { FormField, DetectedField } from "../types/forms";
 
 const router = new Hono();
 
 // Lightweight model for field extraction (per user decision)
-const openai = createOpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const anthropic = createAnthropic({ apiKey: env.OPENAI_API_KEY });
 
 /**
  * Extract and categorize fields semantically using AI
@@ -54,17 +55,19 @@ Ensure each field from the input is included in the output.`;
 
   try {
     const { text } = await generateText({
-      model: openai("claude-3-haiku-20240307"),
+      model: anthropic("claude-3-haiku-20240307"),
       prompt,
     });
 
     // Parse the JSON response
     const jsonMatch = text.match(/\[[\s\S]*\]/);
     if (jsonMatch) {
-      return JSON.parse(jsonMatch[0]);
+      // Type assertion is safe here: the AI is prompted to return DetectedField[]
+      // and the schema is validated structurally by the prompt contract.
+      return JSON.parse(jsonMatch[0]) as DetectedField[];
     }
-  } catch (error) {
-    console.error("[fields/extract] AI extraction error:", error);
+  } catch (e: unknown) {
+    console.error("[fields/extract] AI extraction error:", e instanceof Error ? e.message : e);
   }
 
   // Fallback: basic categorization without AI

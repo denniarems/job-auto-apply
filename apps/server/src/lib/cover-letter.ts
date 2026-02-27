@@ -1,27 +1,9 @@
 import { generateText } from "ai";
-import { anthropic } from "@ai-sdk/anthropic";
-import { createOpenAI } from "@ai-sdk/openai";
-import { google } from "@ai-sdk/google";
-import { env } from "@job-auto-apply/env/server";
+import { type AIProvider, getModel } from "./ai-providers";
 import type { ResumeData } from "./extraction";
 
-// Provider type
-export type AIProvider = "anthropic" | "google" | "openai";
-
-// Create OpenAI client with optional API key
-const openai = createOpenAI({ apiKey: env.OPENAI_API_KEY });
-
-// Map provider to model
-function getModel(provider: AIProvider) {
-  switch (provider) {
-    case "anthropic":
-      return anthropic("claude-3-5-sonnet-20241022");
-    case "google":
-      return google("gemini-2.0-flash-exp");
-    case "openai":
-      return openai("gpt-4o");
-  }
-}
+// Re-export AIProvider for consumers that previously imported it from here
+export type { AIProvider };
 
 // Cover letter generation function
 export async function generateCoverLetter(
@@ -33,9 +15,10 @@ export async function generateCoverLetter(
 ): Promise<string> {
   const model = getModel(provider);
 
-  const { text } = await generateText({
-    model,
-    prompt: `Generate a concise cover letter (~150-250 words) for the following position.
+  try {
+    const { text } = await generateText({
+      model,
+      prompt: `Generate a concise cover letter (~150-250 words) for the following position.
     
 Company: ${companyName}
 Position: ${position}
@@ -58,7 +41,13 @@ Requirements:
 - Keep it concise (1-2 paragraphs, ~150-250 words total)
 
 Write the complete cover letter text.`,
-  });
+    });
 
-  return text;
+    return text;
+  } catch (e: unknown) {
+    const message = e instanceof Error ? e.message : String(e);
+    throw new Error(
+      `Cover letter generation failed using provider "${provider}": ${message}`
+    );
+  }
 }

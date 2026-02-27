@@ -1,9 +1,20 @@
 import { Hono } from "hono";
-import { getProviderDisplayName, isProviderConfigured, type AIProvider } from "../lib/extraction";
+import { z } from "zod";
+import {
+  getProviderDisplayName,
+  isProviderConfigured,
+  type AIProvider,
+} from "../lib/extraction";
 
 const providers = new Hono();
 
-// In-memory store for selected provider (would be in DB/storage in production)
+const providerSchema = z.object({
+  provider: z.enum(["anthropic", "openai", "google", "qwen"]),
+});
+
+// NOTE: selectedProvider is module-level mutable state scoped to a single server
+// process. It resets to "anthropic" on every server restart and is shared across
+// all requests. This is intentional for the current single-user use case.
 let selectedProvider: AIProvider = "anthropic";
 
 // GET /api/providers - List available providers and their key status
@@ -37,23 +48,11 @@ providers.get("/config", (c) => {
 // PATCH /api/providers/config - Update selected provider
 providers.patch("/config", async (c) => {
   try {
-    const body = await c.req.json();
-    const { provider } = body as { provider: AIProvider };
-
-    if (!provider) {
-      return c.json({ success: false, error: "provider is required" }, 400);
+    const result = providerSchema.safeParse(await c.req.json());
+    if (!result.success) {
+      return c.json({ success: false, error: "Invalid provider" }, 400);
     }
-
-    const validProviders: AIProvider[] = ["anthropic", "google", "openai"];
-    if (!validProviders.includes(provider)) {
-      return c.json(
-        {
-          success: false,
-          error: `Invalid provider. Must be one of: ${validProviders.join(", ")}`,
-        },
-        400
-      );
-    }
+    const { provider } = result.data;
 
     // Check if provider is configured
     if (!isProviderConfigured(provider)) {
@@ -75,7 +74,7 @@ providers.patch("/config", async (c) => {
         name: getProviderDisplayName(selectedProvider),
       },
     });
-  } catch (error) {
+  } catch (error: unknown) {
     return c.json(
       {
         success: false,

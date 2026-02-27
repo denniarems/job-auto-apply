@@ -28,7 +28,7 @@ app.use(
       if (origin.startsWith("chrome-extension://") || origin === env.CORS_ORIGIN) {
         return origin;
       }
-      return env.CORS_ORIGIN;
+      return null;
     },
     allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   }),

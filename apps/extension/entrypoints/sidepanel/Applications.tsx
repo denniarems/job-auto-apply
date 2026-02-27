@@ -106,10 +106,11 @@ function AddApplicationForm({ onSubmit, onCancel }: AddApplicationFormProps) {
 }
 
 export function Applications() {
-  const [backendUrl] = useState(DEFAULT_BACKEND_URL);
+  const backendUrl = DEFAULT_BACKEND_URL;
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<ApplicationStatus | "All">("All");
   const [showAddForm, setShowAddForm] = useState(false);
+  const [addError, setAddError] = useState<string | null>(null);
   
   const { applications, loading, error, fetchAll, create, updateStatus, remove } = useApplications(backendUrl);
 
@@ -147,8 +148,13 @@ export function Applications() {
     url?: string;
     status: ApplicationStatus;
   }) => {
-    await create(app);
-    setShowAddForm(false);
+    try {
+      setAddError(null);
+      await create(app);
+      setShowAddForm(false);
+    } catch (err) {
+      setAddError(err instanceof Error ? err.message : "Failed to add application");
+    }
   };
 
   const handleStatusChange = async (id: string, status: ApplicationStatus) => {
@@ -212,6 +218,13 @@ export function Applications() {
           </select>
         </div>
       </div>
+
+      {/* Add Application Error */}
+      {addError && (
+        <div className="text-center py-2 text-red-500">
+          <p>Error: {addError}</p>
+        </div>
+      )}
 
       {/* Loading/Error States */}
       {loading && (

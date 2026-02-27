@@ -16,15 +16,8 @@ import {
   AlertCircle,
   Briefcase
 } from "lucide-react";
-import { clsx, type ClassValue } from "clsx";
-import { twMerge } from "tailwind-merge";
-import { BACKEND_URL } from "@/lib/env";
-
-function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
-
-const DEFAULT_BACKEND_URL = BACKEND_URL;
+import { cn } from "../../lib/cn";
+import { DEFAULT_BACKEND_URL } from "@/lib/env";
 
 interface ResumeData {
   fullName?: string;
@@ -88,15 +81,12 @@ export default function App() {
   const [isSaving, setIsSaving] = useState(false);
   const { status } = useBackendStatus();
 
-  // Load settings from chrome.storage
+  // Load settings from browser.storage.local
   useEffect(() => {
     const loadSettings = async () => {
       try {
-        const win = window as unknown as { chrome?: { storage?: { local?: { get: (keys: string[]) => Promise<Record<string, string>> } } } };
-        if (win.chrome?.storage?.local) {
-          const result = await win.chrome.storage.local.get(["selectedProvider"]);
-          if (result.selectedProvider) setSelectedProvider(result.selectedProvider);
-        }
+        const result = await browser.storage.local.get(["selectedProvider"]);
+        if (result.selectedProvider) setSelectedProvider(result.selectedProvider as string);
       } catch (e) {
         console.log("Could not load settings:", e);
       }
@@ -129,7 +119,8 @@ export default function App() {
     setUploadSuccess(false);
   };
 
-  const handleSaveComplete = async (approvedFields: ResumeData) => {
+  // _approvedFields is handled by ResumeReview before calling onSave
+  const handleSaveComplete = async (_approvedFields: ResumeData) => {
     setIsSaving(true);
     // The ResumeReview component handles the API call
     // Just show success and reset
@@ -143,6 +134,13 @@ export default function App() {
 
   const handleCancelReview = () => {
     setCurrentResume(null);
+  };
+
+  const handleTabChange = (tab: string) => {
+    if (activeTab === "resumes" && tab !== "resumes") {
+      setUploadSuccess(false);
+    }
+    setActiveTab(tab);
   };
 
   return (
@@ -177,7 +175,11 @@ export default function App() {
               </p>
             </div>
             
-            <button className="group relative px-8 py-4 bg-blue-600 text-white rounded-2xl font-bold text-lg shadow-lg shadow-blue-200 hover:bg-blue-700 hover:-translate-y-0.5 transition-all flex items-center gap-3">
+            <button
+              disabled
+              title="Navigate to a job application page in the browser to enable auto-fill"
+              className="group relative px-8 py-4 bg-blue-600 text-white rounded-2xl font-bold text-lg shadow-lg shadow-blue-200 hover:bg-blue-700 hover:-translate-y-0.5 transition-all flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+            >
               <Rocket className="w-6 h-6 group-hover:animate-bounce" />
               Start Auto-Fill
             </button>
@@ -287,37 +289,37 @@ export default function App() {
       <footer className="border-t flex items-center justify-around p-2 bg-slate-50">
         <TabButton 
           active={activeTab === "main"} 
-          onClick={() => setActiveTab("main")}
+          onClick={() => handleTabChange("main")}
           icon={<Rocket className="w-5 h-5" />}
           label="Main"
         />
         <TabButton 
           active={activeTab === "memories"} 
-          onClick={() => setActiveTab("memories")}
+          onClick={() => handleTabChange("memories")}
           icon={<Brain className="w-5 h-5" />}
           label="Memories"
         />
         <TabButton 
           active={activeTab === "applications"} 
-          onClick={() => setActiveTab("applications")}
+          onClick={() => handleTabChange("applications")}
           icon={<Briefcase className="w-5 h-5" />}
           label="Apps"
         />
         <TabButton 
           active={activeTab === "resumes"} 
-          onClick={() => setActiveTab("resumes")}
+          onClick={() => handleTabChange("resumes")}
           icon={<FileText className="w-5 h-5" />}
           label="Resumes"
         />
         <TabButton 
           active={activeTab === "coverletters"} 
-          onClick={() => setActiveTab("coverletters")}
+          onClick={() => handleTabChange("coverletters")}
           icon={<FileSignature className="w-5 h-5" />}
           label="Cover"
         />
         <TabButton 
           active={activeTab === "settings"} 
-          onClick={() => setActiveTab("settings")}
+          onClick={() => handleTabChange("settings")}
           icon={<SettingsIcon className="w-5 h-5" />}
           label="Settings"
         />

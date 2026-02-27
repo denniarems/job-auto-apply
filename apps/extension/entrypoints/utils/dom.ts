@@ -16,6 +16,10 @@ export interface FormField {
   pattern?: string;
 }
 
+// NOTE: This interface is structurally compatible with (and a subset of)
+// `FormData` in `../types/forms.ts`, which additionally carries an optional
+// `atsType` field.  Both definitions agree on all shared fields so values
+// produced here are assignable to the canonical type without casting.
 export interface FormData {
   action: string;
   method: string;
@@ -191,17 +195,24 @@ export function getSurroundingText(element: Element, depth: number = 3): string 
 }
 
 /**
- * Find all forms including those in shadow DOM
+ * Find all forms including those in shadow DOM.
+ *
+ * `querySelectorAllDeep('form')` already traverses the regular DOM as well as
+ * shadow roots, so calling `extractForms()` (which uses
+ * `document.querySelectorAll('form')`) on top of it would process every
+ * regular form twice.  We deduplicate by element reference using a Set before
+ * building the result array.
  */
 export function extractFormsDeep(): FormData[] {
+  const seenForms = new Set<Element>();
   const forms: FormData[] = [];
-  
-  // Regular forms
-  forms.push(...extractForms());
 
-  // Forms in shadow DOM
-  const shadowForms = querySelectorAllDeep('form');
-  for (const form of shadowForms) {
+  // querySelectorAllDeep covers both the regular DOM and all shadow roots.
+  const allForms = querySelectorAllDeep('form');
+  for (const form of allForms) {
+    if (seenForms.has(form)) continue;
+    seenForms.add(form);
+
     const htmlForm = form as HTMLFormElement;
     forms.push({
       action: htmlForm.action || '',

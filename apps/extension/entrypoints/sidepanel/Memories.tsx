@@ -47,10 +47,12 @@ export function Memories() {
         method: "DELETE",
       });
       if (res.ok) {
-        setMemories(memories.filter((m) => m.id !== id));
+        setMemories((prev) => prev.filter((m) => m.id !== id));
+      } else {
+        console.error("[Memories] Delete failed:", res.status);
       }
-    } catch (e) {
-      console.error("Failed to delete:", e);
+    } catch (e: unknown) {
+      console.error("[Memories] Delete error:", e);
     }
   };
 
@@ -73,9 +75,17 @@ export function Memories() {
       if (res.ok) {
         setEditingId(null);
         fetchMemories();
+      } else {
+        console.error("[Memories] Save edit failed:", res.status);
+        setError("Failed to save changes. Please try again.");
+        setEditingId(null);
+        setEditForm({ question: "", answer: "" });
       }
-    } catch (e) {
-      console.error("Failed to update:", e);
+    } catch (e: unknown) {
+      console.error("[Memories] Save edit error:", e);
+      setError("Failed to save changes. Please try again.");
+      setEditingId(null);
+      setEditForm({ question: "", answer: "" });
     }
   };
 

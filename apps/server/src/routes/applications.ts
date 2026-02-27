@@ -4,6 +4,12 @@ import { v4 as uuidv4 } from "uuid";
 
 const router = new Hono();
 
+// Sanitize user-supplied IDs to prevent SQL injection in LanceDB where clauses.
+// Only allow alphanumeric characters and hyphens (UUID format).
+function sanitizeId(id: string): string {
+  return id.replace(/[^a-zA-Z0-9-]/g, "");
+}
+
 router.post("/", async (c) => {
   const { company, position, url, status, applied_date } = await c.req.json();
 
@@ -14,25 +20,37 @@ router.post("/", async (c) => {
   const now = Date.now();
   const id = uuidv4();
 
-  await applicationsTable.add([
-    {
-      id,
-      company,
-      position,
-      url: url || "",
-      status: status || "Applied",
-      applied_date: BigInt(applied_date || now),
-      created_at: BigInt(now),
-    },
-  ]);
+  try {
+    await applicationsTable.add([
+      {
+        id,
+        company,
+        position,
+        url: url || "",
+        status: status || "Applied",
+        applied_date: BigInt(applied_date || now),
+        created_at: BigInt(now),
+      },
+    ]);
+  } catch (e: unknown) {
+    console.error("Failed to create application:", e);
+    return c.json({ error: "Failed to create application" }, 500);
+  }
 
   return c.json({ success: true, id }, 201);
 });
 
 router.get("/", async (c) => {
-  const results = await applicationsTable.query().limit(100).toArray();
-  
+  let results: Awaited<ReturnType<typeof applicationsTable.query>["toArray"]>;
+  try {
+    results = await applicationsTable.query().limit(100).toArray();
+  } catch (e: unknown) {
+    console.error("Failed to fetch applications:", e);
+    return c.json({ error: "Failed to fetch applications" }, 500);
+  }
+
   // Filter out the __init__ placeholder and sort by date desc
+  // LanceDB does not expose a stable cross-version .orderBy() API, so we sort in JS.
   const applications = results
     .filter((r) => r.id !== "__init__")
     .sort((a, b) => Number(b.applied_date) - Number(a.applied_date))
@@ -50,8 +68,18 @@ router.get("/", async (c) => {
 });
 
 router.get("/:id", async (c) => {
-  const id = c.req.param("id");
-  const results = await applicationsTable.query().where(`id = '${id}'`).toArray();
+  const id = sanitizeId(c.req.param("id"));
+
+  let results: Awaited<ReturnType<typeof applicationsTable.query>["toArray"]>;
+  try {
+    results = await applicationsTable
+      .query()
+      .where(`id = '${id}'`)
+      .toArray();
+  } catch (e: unknown) {
+    console.error("Failed to fetch application:", e);
+    return c.json({ error: "Failed to fetch application" }, 500);
+  }
 
   if (results.length === 0 || results[0].id === "__init__") {
     return c.json({ error: "Application not found" }, 404);
@@ -70,16 +98,25 @@ router.get("/:id", async (c) => {
 });
 
 router.patch("/:id", async (c) => {
-  const id = c.req.param("id");
+  const id = sanitizeId(c.req.param("id"));
   const { company, position, url, status, applied_date } = await c.req.json();
 
-  const existing = await applicationsTable.query().where(`id = '${id}'`).toArray();
+  let existing: Awaited<ReturnType<typeof applicationsTable.query>["toArray"]>;
+  try {
+    existing = await applicationsTable
+      .query()
+      .where(`id = '${id}'`)
+      .toArray();
+  } catch (e: unknown) {
+    console.error("Failed to fetch application for update:", e);
+    return c.json({ error: "Failed to fetch application" }, 500);
+  }
 
   if (existing.length === 0 || existing[0].id === "__init__") {
     return c.json({ error: "Application not found" }, 404);
   }
 
-  const updates: Record<string, any> = {};
+  const updates: Record<string, string | number | bigint | boolean> = {};
 
   if (company !== undefined) updates.company = company;
   if (position !== undefined) updates.position = position;
@@ -88,25 +125,45 @@ router.patch("/:id", async (c) => {
   if (applied_date !== undefined) updates.applied_date = BigInt(applied_date);
 
   if (Object.keys(updates).length > 0) {
-    await applicationsTable.update({
-      where: `id = '${id}'`,
-      values: updates,
-    });
+    try {
+      await applicationsTable.update({
+        where: `id = '${id}'`,
+        values: updates,
+      });
+    } catch (e: unknown) {
+      console.error("Failed to update application:", e);
+      return c.json({ error: "Failed to update application" }, 500);
+    }
   }
 
   return c.json({ success: true, id });
 });
 
 router.delete("/:id", async (c) => {
-  const id = c.req.param("id");
-  
-  const existing = await applicationsTable.query().where(`id = '${id}'`).toArray();
-  
+  const id = sanitizeId(c.req.param("id"));
+
+  let existing: Awaited<ReturnType<typeof applicationsTable.query>["toArray"]>;
+  try {
+    existing = await applicationsTable
+      .query()
+      .where(`id = '${id}'`)
+      .toArray();
+  } catch (e: unknown) {
+    console.error("Failed to fetch application for delete:", e);
+    return c.json({ error: "Failed to fetch application" }, 500);
+  }
+
   if (existing.length === 0 || existing[0].id === "__init__") {
     return c.json({ error: "Application not found" }, 404);
   }
 
-  await applicationsTable.delete(`id = '${id}'`);
+  try {
+    await applicationsTable.delete(`id = '${id}'`);
+  } catch (e: unknown) {
+    console.error("Failed to delete application:", e);
+    return c.json({ error: "Failed to delete application" }, 500);
+  }
+
   return c.json({ success: true });
 });
 

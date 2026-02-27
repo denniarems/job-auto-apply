@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 
+// TODO: Unify ResumeData with the server-side definition in apps/server/src/lib/extraction.ts
 export interface ResumeData {
   fullName?: string;
   email?: string;
@@ -37,8 +38,8 @@ export interface CoverLetterHistoryItem {
   companyName: string;
   position: string;
   content: string;
-  createdAt: string;
-  updatedAt: string;
+  // Server returns a numeric timestamp under `generated_at`
+  generated_at: number;
 }
 
 export function useCoverLetter(backendUrl: string, provider: string) {
@@ -68,13 +69,14 @@ export function useCoverLetter(backendUrl: string, provider: string) {
       });
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.message || "Generation failed");
+        throw new Error((errData as { message?: string }).message || "Generation failed");
       }
       const data = await res.json();
-      return data.content;
+      return (data as { content: string }).content;
     } catch (err) {
       const message = err instanceof Error ? err.message : "Generation failed";
       setError(message);
+      // Re-throw so the caller can handle it; avoid logging here to prevent duplicate logs
       throw err;
     } finally {
       setIsGenerating(false);
@@ -96,7 +98,7 @@ export function useCoverLetter(backendUrl: string, provider: string) {
       });
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.message || "PDF generation failed");
+        throw new Error((errData as { message?: string }).message || "PDF generation failed");
       }
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
@@ -123,7 +125,8 @@ export function useCoverLetter(backendUrl: string, provider: string) {
         throw new Error("Failed to fetch history");
       }
       const data = await res.json();
-      return data.history || [];
+      // Server returns the array directly (not wrapped in { history: [...] })
+      return Array.isArray(data) ? data : [];
     } catch (err) {
       console.error("Failed to fetch cover letter history:", err);
       return [];

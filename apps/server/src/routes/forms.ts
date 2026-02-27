@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { generateText } from "ai";
-import { createOpenAI } from "@ai-sdk/openai";
+import { createAnthropic } from "@ai-sdk/anthropic";
+import { env } from "@job-auto-apply/env/server";
 import type { FormData, DetectionResult, DetectedField } from "../types/forms";
 import { detectATS } from "../lib/ats-detector";
 import { filterHoneypotFields } from "../lib/honeypot";
@@ -8,7 +9,7 @@ import { filterHoneypotFields } from "../lib/honeypot";
 const router = new Hono();
 
 // Lightweight model for form detection (per user decision)
-const openai = createOpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const anthropic = createAnthropic({ apiKey: env.OPENAI_API_KEY });
 
 // In-memory cache for form detection results (5 minutes TTL)
 const detectionCache = new Map<
@@ -18,11 +19,20 @@ const detectionCache = new Map<
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
 /**
- * Extract cache key from form data and URL
+ * Extract cache key from form data and URL.
+ * Includes a hash of all field names/ids sorted alphabetically so that
+ * two forms on the same URL with different fields don't share a cache entry.
  */
 function getCacheKey(url: string, forms: FormData[]): string {
-  // Use URL and field count as cache key
-  return `${url}:${forms.length}`;
+  const allFieldIdentifiers = forms
+    .flatMap((form) => form.fields.map((f) => f.name || f.id))
+    .sort()
+    .join(",");
+  const fieldHash = allFieldIdentifiers
+    .split("")
+    .reduce((acc, char) => (acc * 31 + char.charCodeAt(0)) | 0, 0)
+    .toString(36);
+  return `${url}:${forms.length}:${fieldHash}`;
 }
 
 /**
@@ -115,7 +125,7 @@ Only return isJobApplication=true if confidence > 0.8 (conservative threshold).`
 
   try {
     const { text } = await generateText({
-      model: openai("claude-3-haiku-20240307"),
+      model: anthropic("claude-3-haiku-20240307"),
       prompt,
     });
 
@@ -134,8 +144,8 @@ Only return isJobApplication=true if confidence > 0.8 (conservative threshold).`
         detectedFields: parsed.detectedFields ?? [],
       };
     }
-  } catch (error) {
-    console.error("[forms/detect] AI detection error:", error);
+  } catch (e: unknown) {
+    console.error("[forms/detect] AI detection error:", e instanceof Error ? e.message : e);
   }
 
   // Fallback: basic detection based on field names

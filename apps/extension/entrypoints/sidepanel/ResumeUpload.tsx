@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { Upload, FileText, AlertCircle, Loader2 } from "lucide-react";
+import { Upload, FileText, Loader2 } from "lucide-react";
 
 interface ResumeUploadProps {
   onUploadComplete: (resume: {
@@ -193,11 +193,8 @@ export function ResumeUpload({
         </button>
       )}
 
-      {/* Error Display */}
-      <div className="text-sm text-red-600 flex items-center gap-2">
-        <AlertCircle className="w-4 h-4" />
-        <span>Maximum file size: 10MB</span>
-      </div>
+      {/* File size hint */}
+      <p className="text-xs text-slate-400">Maximum file size: 10MB</p>
     </div>
   );
 }

@@ -1,11 +1,6 @@
 import { useState } from 'react';
 import { Save, X, HelpCircle } from 'lucide-react';
-import { clsx, type ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
-
-function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
+import { cn } from '../lib/cn';
 
 // Types
 interface FormField {

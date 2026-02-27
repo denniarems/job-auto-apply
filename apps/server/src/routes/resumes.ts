@@ -2,25 +2,37 @@ import { Hono } from "hono";
 import { parsePdf } from "../lib/pdf";
 import { extractResumeData, type AIProvider } from "../lib/extraction";
 import { generateFieldQuestions, toMemoryQuestions } from "../lib/questions";
-import { initDb, memoriesTable } from "../db/lancedb";
+import { memoriesTable } from "../db/lancedb";
 import { generateEmbedding } from "../lib/ai";
 import { v4 as uuidv4 } from "uuid";
 
 const resumes = new Hono();
 
+const RESUME_TTL_MS = 60 * 60 * 1000; // 1 hour
+
 // In-memory storage for uploaded resumes (would be DB in production)
 interface StoredResume {
   id: string;
   filename: string;
-  uploadedAt: Date;
+  uploadedAt: number;
   extractedData: Awaited<ReturnType<typeof extractResumeData>>;
   questions: Awaited<ReturnType<typeof generateFieldQuestions>>;
 }
 
 const uploadedResumes: Map<string, StoredResume> = new Map();
 
+function evictExpiredResumes(): void {
+  const now = Date.now();
+  for (const [id, resume] of uploadedResumes.entries()) {
+    if (now - resume.uploadedAt > RESUME_TTL_MS) {
+      uploadedResumes.delete(id);
+    }
+  }
+}
+
 // POST /api/resumes/upload - Accept PDF, extract data, return with questions
 resumes.post("/upload", async (c) => {
+  evictExpiredResumes();
   try {
     const formData = await c.req.formData();
     const file = formData.get("file") as File | null;
@@ -65,7 +77,7 @@ resumes.post("/upload", async (c) => {
     const storedResume: StoredResume = {
       id: resumeId,
       filename: file.name,
-      uploadedAt: new Date(),
+      uploadedAt: Date.now(),
       extractedData: extractionResult,
       questions,
     };
@@ -77,7 +89,7 @@ resumes.post("/upload", async (c) => {
       resume: {
         id: resumeId,
         filename: file.name,
-        uploadedAt: storedResume.uploadedAt.toISOString(),
+        uploadedAt: new Date(storedResume.uploadedAt).toISOString(),
         data: extractionResult.data,
         confidences: extractionResult.confidences,
         questions: questions.map((q) => ({
@@ -103,6 +115,7 @@ resumes.post("/upload", async (c) => {
 
 // POST /api/resumes/approve - Accept approved fields, create memories in Zvec
 resumes.post("/approve", async (c) => {
+  evictExpiredResumes();
   try {
     const body = await c.req.json();
     const { resumeId, approvedFields } = body;
@@ -123,47 +136,51 @@ resumes.post("/approve", async (c) => {
     const questions = generateFieldQuestions(dataToSave);
     const memoryQuestions = toMemoryQuestions(questions);
 
-    // Initialize database if needed
-    await initDb();
-
     if (!memoriesTable) {
       return c.json(
         { success: false, error: "Database not initialized" },
-        500
+        503
       );
     }
 
-    // Create memories for each field with question
-    const createdMemories = [];
+    // Create memories for each field with question (parallel embedding calls)
     const now = Date.now();
+    const createdMemories: Array<{
+      id: string;
+      question: string;
+      answer: string;
+      category: string;
+    }> = [];
 
-    for (const mem of memoryQuestions) {
-      const memoryId = uuidv4();
+    await Promise.all(
+      memoryQuestions.map(async (mem) => {
+        const memoryId = uuidv4();
 
-      // Generate embedding for the question
-      const embedding = await generateEmbedding(mem.question);
+        // Generate embedding for the question
+        const embedding = await generateEmbedding(mem.question);
 
-      await memoriesTable.add([
-        {
+        await memoriesTable.add([
+          {
+            id: memoryId,
+            question: mem.question,
+            answer: mem.answer,
+            category: mem.category,
+            source: "resume",
+            usage_count: BigInt(0),
+            last_used: BigInt(now),
+            created_at: BigInt(now),
+            vector: embedding,
+          },
+        ]);
+
+        createdMemories.push({
           id: memoryId,
           question: mem.question,
           answer: mem.answer,
           category: mem.category,
-          source: "resume",
-          usage_count: BigInt(0),
-          last_used: BigInt(now),
-          created_at: BigInt(now),
-          vector: embedding,
-        },
-      ]);
-
-      createdMemories.push({
-        id: memoryId,
-        question: mem.question,
-        answer: mem.answer,
-        category: mem.category,
-      });
-    }
+        });
+      })
+    );
 
     // Clean up stored resume
     uploadedResumes.delete(resumeId);
@@ -188,10 +205,11 @@ resumes.post("/approve", async (c) => {
 
 // GET /api/resumes - List uploaded resumes
 resumes.get("/", async (c) => {
+  evictExpiredResumes();
   const resumesList = Array.from(uploadedResumes.values()).map((r) => ({
     id: r.id,
     filename: r.filename,
-    uploadedAt: r.uploadedAt.toISOString(),
+    uploadedAt: new Date(r.uploadedAt).toISOString(),
   }));
 
   return c.json({
@@ -202,6 +220,7 @@ resumes.get("/", async (c) => {
 
 // GET /api/resumes/:id - Get specific resume
 resumes.get("/:id", async (c) => {
+  evictExpiredResumes();
   const id = c.req.param("id");
   const resume = uploadedResumes.get(id);
 
@@ -214,7 +233,7 @@ resumes.get("/:id", async (c) => {
     resume: {
       id: resume.id,
       filename: resume.filename,
-      uploadedAt: resume.uploadedAt.toISOString(),
+      uploadedAt: new Date(resume.uploadedAt).toISOString(),
       data: resume.extractedData.data,
       confidences: resume.extractedData.confidences,
       questions: resume.questions.map((q) => ({

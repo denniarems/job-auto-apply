@@ -75,7 +75,7 @@ export function generateFieldQuestions(resumeData: ResumeData): FieldQuestion[] 
   }
 
   // Work Experience
-  if (resumeData.workExperience && resumeData.workExperience.length > 0) {
+  if (resumeData.workExperience?.length) {
     resumeData.workExperience.forEach((exp, index) => {
       questions.push({
         field: `workExperience.${index}.company`,
@@ -103,7 +103,7 @@ export function generateFieldQuestions(resumeData: ResumeData): FieldQuestion[] 
   }
 
   // Education
-  if (resumeData.education && resumeData.education.length > 0) {
+  if (resumeData.education?.length) {
     resumeData.education.forEach((edu, index) => {
       questions.push({
         field: `education.${index}.institution`,
@@ -131,7 +131,7 @@ export function generateFieldQuestions(resumeData: ResumeData): FieldQuestion[] 
   }
 
   // Skills
-  if (resumeData.skills && resumeData.skills.length > 0) {
+  if (resumeData.skills?.length) {
     questions.push({
       field: "skills",
       category: "skills",
@@ -141,7 +141,7 @@ export function generateFieldQuestions(resumeData: ResumeData): FieldQuestion[] 
   }
 
   // Certifications
-  if (resumeData.certifications && resumeData.certifications.length > 0) {
+  if (resumeData.certifications?.length) {
     questions.push({
       field: "certifications",
       category: "certifications",
@@ -151,7 +151,7 @@ export function generateFieldQuestions(resumeData: ResumeData): FieldQuestion[] 
   }
 
   // Languages
-  if (resumeData.languages && resumeData.languages.length > 0) {
+  if (resumeData.languages?.length) {
     questions.push({
       field: "languages",
       category: "languages",
@@ -161,7 +161,7 @@ export function generateFieldQuestions(resumeData: ResumeData): FieldQuestion[] 
   }
 
   // Projects
-  if (resumeData.projects && resumeData.projects.length > 0) {
+  if (resumeData.projects?.length) {
     resumeData.projects.forEach((proj, index) => {
       questions.push({
         field: `projects.${index}.name`,
@@ -179,7 +179,7 @@ export function generateFieldQuestions(resumeData: ResumeData): FieldQuestion[] 
         });
       }
 
-      if (proj.technologies && proj.technologies.length > 0) {
+      if (proj.technologies?.length) {
         questions.push({
           field: `projects.${index}.technologies`,
           category: "projects",
@@ -191,7 +191,7 @@ export function generateFieldQuestions(resumeData: ResumeData): FieldQuestion[] 
   }
 
   // Links
-  if (resumeData.links && resumeData.links.length > 0) {
+  if (resumeData.links?.length) {
     questions.push({
       field: "links",
       category: "links",
@@ -217,7 +217,7 @@ export function toMemoryQuestions(
     .filter((q) => q.value)
     .map((q) => ({
       question: q.question,
-      answer: q.value || "",
+      answer: q.value as string,
       category: q.category,
     }));
 }

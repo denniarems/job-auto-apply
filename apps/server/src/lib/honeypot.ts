@@ -2,8 +2,6 @@ import type { FormField } from "../types/forms";
 
 // Common honeypot field names that are fake/rejected by legitimate users
 const HONEYPOT_FIELD_NAMES = [
-  "website",
-  "url",
   "homepage",
   "confirm_email",
   "email_confirm",
@@ -52,7 +50,7 @@ export function isHoneypotField(field: FormField): boolean {
  * @param url - The URL where the field was detected
  */
 export function logHoneypot(field: FormField, url: string): void {
-  console.log("[honeypot] Detected honeypot field:", {
+  console.warn("[honeypot] Detected honeypot field:", {
     fieldName: field.name,
     fieldId: field.id,
     fieldType: field.type,
@@ -83,7 +81,7 @@ export function filterHoneypotFields(
   });
 
   if (honeypotFields.length > 0) {
-    console.log(
+    console.warn(
       `[honeypot] Filtered ${honeypotFields.length} honeypot field(s) from ${fields.length} total fields`,
     );
   }
