@@ -2,8 +2,9 @@ import { useState, useEffect, useMemo } from "react";
 import { Plus, Search, Filter, Briefcase, X } from "lucide-react";
 import { ApplicationCard, type ApplicationStatus } from "@/components/ApplicationCard";
 import { useApplications, type Application } from "@/hooks/useApplications";
+import { BACKEND_URL } from "@/lib/env";
 
-const DEFAULT_BACKEND_URL = "http://localhost:3000";
+const DEFAULT_BACKEND_URL = BACKEND_URL;
 
 interface AddApplicationFormProps {
   onSubmit: (app: { company: string; position: string; url?: string; status: ApplicationStatus }) => void;

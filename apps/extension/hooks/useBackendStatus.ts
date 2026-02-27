@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { BACKEND_URL } from '@/lib/env';
 
 export function useBackendStatus() {
   const [status, setStatus] = useState<"online" | "offline" | "loading">("loading");
@@ -10,7 +11,7 @@ export function useBackendStatus() {
   useEffect(() => {
     const checkStatus = async () => {
       try {
-        const res = await fetch("http://localhost:3000/health");
+        const res = await fetch(`${BACKEND_URL}/health`);
         if (res.ok) {
           const data = await res.json();
           setStatus("online");
