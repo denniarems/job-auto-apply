@@ -1,7 +1,8 @@
 import type { FormData, FormField, DetectionResult, FieldMapping } from './types/forms';
+import { BACKEND_URL } from '@/lib/env';
 
 // API configuration
-const API_BASE_URL = 'http://localhost:3000';
+const API_BASE_URL = BACKEND_URL;
 
 const API_ENDPOINTS = {
   detect: `${API_BASE_URL}/api/forms/detect`,

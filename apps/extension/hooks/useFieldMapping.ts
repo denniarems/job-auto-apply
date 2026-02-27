@@ -4,6 +4,7 @@
  */
 
 import { useState, useCallback } from 'react';
+import { BACKEND_URL } from '@/lib/env';
 
 // Types
 interface FormField {
@@ -73,7 +74,7 @@ interface UseFieldMappingReturn {
 }
 
 // Default backend URL
-const DEFAULT_BACKEND_URL = 'http://localhost:3000';
+const DEFAULT_BACKEND_URL = BACKEND_URL;
 
 export function useFieldMapping(backendUrl: string = DEFAULT_BACKEND_URL): UseFieldMappingReturn {
   const [mappings, setMappings] = useState<FieldMapping[]>([]);

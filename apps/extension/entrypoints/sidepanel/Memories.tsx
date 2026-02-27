@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Brain, Trash2, Edit2, Check, X, Plus, RefreshCw } from "lucide-react";
+import { BACKEND_URL } from "@/lib/env";
 
 interface Memory {
   id: string;
@@ -22,7 +23,7 @@ export function Memories() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("http://localhost:3000/api/memories/all");
+      const res = await fetch(`${BACKEND_URL}/api/memories/all`);
       if (res.ok) {
         const data = await res.json();
         setMemories(data);
@@ -42,7 +43,7 @@ export function Memories() {
 
   const handleDelete = async (id: string) => {
     try {
-      const res = await fetch(`http://localhost:3000/api/memories/${id}`, {
+      const res = await fetch(`${BACKEND_URL}/api/memories/${id}`, {
         method: "DELETE",
       });
       if (res.ok) {
@@ -61,7 +62,7 @@ export function Memories() {
   const handleSaveEdit = async (id: string) => {
     // Use PATCH endpoint to update
     try {
-      const res = await fetch(`http://localhost:3000/api/memories/${id}`, {
+      const res = await fetch(`${BACKEND_URL}/api/memories/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

@@ -18,12 +18,13 @@ import {
 } from "lucide-react";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { BACKEND_URL } from "@/lib/env";
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-const DEFAULT_BACKEND_URL = "http://localhost:3000";
+const DEFAULT_BACKEND_URL = BACKEND_URL;
 
 interface ResumeData {
   fullName?: string;
@@ -79,7 +80,7 @@ interface UploadedResume {
 
 export default function App() {
   const [activeTab, setActiveTab] = useState("main");
-  const [backendUrl, setBackendUrl] = useState(DEFAULT_BACKEND_URL);
+  const backendUrl = DEFAULT_BACKEND_URL;
   const [selectedProvider, setSelectedProvider] = useState("anthropic");
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [uploadSuccess, setUploadSuccess] = useState(false);
@@ -93,8 +94,7 @@ export default function App() {
       try {
         const win = window as unknown as { chrome?: { storage?: { local?: { get: (keys: string[]) => Promise<Record<string, string>> } } } };
         if (win.chrome?.storage?.local) {
-          const result = await win.chrome.storage.local.get(["backendUrl", "selectedProvider"]);
-          if (result.backendUrl) setBackendUrl(result.backendUrl);
+          const result = await win.chrome.storage.local.get(["selectedProvider"]);
           if (result.selectedProvider) setSelectedProvider(result.selectedProvider);
         }
       } catch (e) {
@@ -255,19 +255,8 @@ export default function App() {
           <div className="space-y-4">
             <h2 className="text-lg font-bold">Settings</h2>
             <div className="p-4 bg-slate-50 rounded-xl space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Backend URL</span>
-                <input
-                  type="text"
-                  value={backendUrl}
-                  onChange={(e) => setBackendUrl(e.target.value)}
-                  className="text-sm text-slate-500 border rounded px-2 py-1"
-                  placeholder="http://localhost:3000"
-                />
-              </div>
-              
               {/* Provider Selection */}
-              <div className="pt-3 border-t">
+              <div>
                 <h3 className="text-sm font-semibold text-slate-600 mb-2">AI Provider</h3>
                 <select
                   value={selectedProvider}
@@ -281,11 +270,6 @@ export default function App() {
                 <p className="text-xs text-slate-400 mt-2">
                   API key status: Check backend /health endpoint
                 </p>
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Local Backend Port</span>
-                <span className="text-sm text-slate-500">3000</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">Confidence Threshold</span>
