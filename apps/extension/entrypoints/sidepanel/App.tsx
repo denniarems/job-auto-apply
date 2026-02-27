@@ -255,13 +255,8 @@ export default function App() {
           <div className="space-y-4">
             <h2 className="text-lg font-bold">Settings</h2>
             <div className="p-4 bg-slate-50 rounded-xl space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Backend URL</span>
-                <span className="text-sm text-slate-500 font-mono">{backendUrl}</span>
-              </div>
-              
               {/* Provider Selection */}
-              <div className="pt-3 border-t">
+              <div>
                 <h3 className="text-sm font-semibold text-slate-600 mb-2">AI Provider</h3>
                 <select
                   value={selectedProvider}
@@ -275,11 +270,6 @@ export default function App() {
                 <p className="text-xs text-slate-400 mt-2">
                   API key status: Check backend /health endpoint
                 </p>
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Local Backend Port</span>
-                <span className="text-sm text-slate-500">{new URL(BACKEND_URL).port || "80"}</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">Confidence Threshold</span>
